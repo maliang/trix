@@ -2,7 +2,7 @@ import { computed, ref, shallowRef } from 'vue';
 import type { RouteRecordRaw } from 'vue-router';
 import { defineStore } from 'pinia';
 import { useBoolean } from '@trix/hooks';
-import { router, staticRoutes, dynamicRoutes } from '@/router';
+import { router, staticRoutes, dynamicRoutes, builtinRoutes } from '@/router';
 import { notFoundRoute } from '@/router/routes';
 import { fetchMenuSchema } from '@/service/api';
 import { SetupStoreId } from '@/store/plugins';
@@ -18,6 +18,8 @@ import {
   getBreadcrumbsByRoute,
   transformMenuToSearchMenus,
   transformMenuRoutesToRoutes,
+  extractBuiltinRouteMetas,
+  BUILTIN_ROUTE_NAMES,
   type MenuItem,
   type BreadcrumbItem
 } from './shared';
@@ -191,6 +193,38 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
   }
 
   /**
+   * 更新内置路由的 meta 信息
+   * 从 API 返回的菜单数据中提取内置路由的配置，更新已注册路由的 meta
+   * @param menuRoutes API 返回的菜单路由列表
+   */
+  function updateBuiltinRoutesMeta(menuRoutes: Api.Route.MenuRoute[]) {
+    const builtinMetas = extractBuiltinRouteMetas(menuRoutes);
+    
+    if (builtinMetas.size === 0) return;
+    
+    // 遍历内置路由，更新其 meta 信息
+    builtinRoutes.forEach(route => {
+      // 内置路由的结构是 { path, component: LayoutWrapper, children: [{ name, component, meta }] }
+      const childRoute = route.children?.[0];
+      if (!childRoute?.name) return;
+      
+      const routeName = childRoute.name as string;
+      const apiMeta = builtinMetas.get(routeName);
+      
+      if (apiMeta && childRoute.meta) {
+        // 合并 API 返回的 meta 到已注册路由的 meta
+        // 保留原有的必要属性（如 requiresAuth、layoutType、hideInMenu）
+        // 更新可配置的属性（如 title、schemaSource、icon 等）
+        if (apiMeta.title) childRoute.meta.title = apiMeta.title;
+        if (apiMeta.icon) childRoute.meta.icon = apiMeta.icon;
+        if (apiMeta.schemaSource) childRoute.meta.schemaSource = apiMeta.schemaSource;
+        if (apiMeta.useJsonRenderer !== undefined) childRoute.meta.useJsonRenderer = apiMeta.useJsonRenderer;
+        if (apiMeta.layoutType) childRoute.meta.layoutType = apiMeta.layoutType;
+      }
+    });
+  }
+
+  /**
    * 初始化常量路由
    */
   async function initConstantRoute() {
@@ -227,6 +261,10 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
       // 从 API 获取菜单路由
       try {
         const menuRoutes = await fetchMenuSchema(menuRouteUrl) as unknown as Api.Route.MenuRoute[];
+        
+        // 更新内置路由的 meta 信息（如 schemaSource 等）
+        updateBuiltinRoutesMeta(menuRoutes);
+        
         // 将 API 返回的菜单路由转换为 Vue Router 路由
         const apiRoutes = transformMenuRoutesToRoutes(menuRoutes);
         // 根据用户权限过滤路由

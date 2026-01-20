@@ -1,5 +1,53 @@
 [
   {
+    "name": "login",
+    "path": "/login",
+    "meta": {
+      "title": "登录",
+      "requiresAuth": false,
+      "layoutType": "blank",
+      "hideInMenu": true,
+      "useJsonRenderer": true,
+      "schemaSource": "/mock/schema/login.json"
+    }
+  },
+  {
+    "name": "forbidden",
+    "path": "/403",
+    "meta": {
+      "title": "无权限",
+      "requiresAuth": false,
+      "layoutType": "normal",
+      "hideInMenu": true,
+      "useJsonRenderer": true,
+      "schemaSource": "/mock/schema/403.json"
+    }
+  },
+  {
+    "name": "not-found",
+    "path": "/404",
+    "meta": {
+      "title": "页面不存在",
+      "requiresAuth": false,
+      "layoutType": "normal",
+      "hideInMenu": true,
+      "useJsonRenderer": true,
+      "schemaSource": "/mock/schema/404.json"
+    }
+  },
+  {
+    "name": "server-error",
+    "path": "/500",
+    "meta": {
+      "title": "服务器错误",
+      "requiresAuth": false,
+      "layoutType": "normal",
+      "hideInMenu": true,
+      "useJsonRenderer": true,
+      "schemaSource": "/mock/schema/500.json"
+    }
+  },
+  {
     "name": "home",
     "path": "/home",
     "meta": {

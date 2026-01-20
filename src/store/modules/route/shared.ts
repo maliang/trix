@@ -391,18 +391,46 @@ export function transformMenuToSearchMenus(menus: MenuItem[], treeMap: MenuItem[
 }
 
 /**
+ * 内置路由名称列表
+ * 这些路由在应用启动时就已注册，从 API 获取菜单时需要过滤掉，避免重复注册
+ */
+export const BUILTIN_ROUTE_NAMES = ['login', 'forbidden', 'not-found', 'server-error'];
+
+/**
+ * 从 API 菜单数据中提取内置路由的配置
+ * @param menuRoutes API 返回的菜单路由列表
+ * @returns 内置路由配置映射 { routeName: meta }
+ */
+export function extractBuiltinRouteMetas(menuRoutes: Api.Route.MenuRoute[]): Map<string, Api.Route.MenuRoute['meta']> {
+  const builtinMetas = new Map<string, Api.Route.MenuRoute['meta']>();
+  
+  menuRoutes.forEach(menuRoute => {
+    if (BUILTIN_ROUTE_NAMES.includes(menuRoute.name) && menuRoute.meta) {
+      builtinMetas.set(menuRoute.name, menuRoute.meta);
+    }
+  });
+  
+  return builtinMetas;
+}
+
+/**
  * 将 API 返回的菜单路由转换为 Vue Router 路由
  * @param menuRoutes API 返回的菜单路由列表
  * @returns Vue Router 路由列表
  */
 export function transformMenuRoutesToRoutes(menuRoutes: Api.Route.MenuRoute[]): RouteRecordRaw[] {
+  // 过滤掉内置路由，避免重复注册
+  const filteredMenuRoutes = menuRoutes.filter(
+    menuRoute => !BUILTIN_ROUTE_NAMES.includes(menuRoute.name)
+  );
+
   // 将菜单包装到 root 路由下
   const rootRoute: RouteRecordRaw = {
     path: '/',
     name: 'root',
     component: LayoutWrapper,
     redirect: '/home',
-    children: menuRoutes.map(menuRoute => transformMenuRouteToRoute(menuRoute))
+    children: filteredMenuRoutes.map(menuRoute => transformMenuRouteToRoute(menuRoute))
   };
 
   return [rootRoute];
@@ -423,11 +451,10 @@ function transformMenuRouteToRoute(menuRoute: Api.Route.MenuRoute, isChild = fal
   const routeMeta = {
     title: meta?.title,
     icon: meta?.icon,
-    localIcon: meta?.localIcon,
     order: meta?.order,
     hideInMenu: meta?.hideInMenu,
     keepAlive: meta?.keepAlive,
-    roles: meta?.roles,
+    permissions: meta?.permissions,
     requiresAuth: true,
     layoutType: meta?.layoutType || 'normal',
     openType: meta?.openType || 'normal',
