@@ -28,12 +28,15 @@
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit --skipLibCheck",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
     "@better-scroll/core": "2.5.1",
     "@iconify/vue": "5.0.0",
-    "@maliang47/vschema": "^1.1.2",
+    "@maliang47/vschema": "^1.2.0",
     "@trix/color": "workspace:*",
     "@trix/hooks": "workspace:*",
     "@trix/materials": "workspace:*",
@@ -94,6 +97,7 @@
     "vite-plugin-progress": "0.0.7",
     "vite-plugin-svg-icons": "2.0.1",
     "vite-plugin-vue-devtools": "8.0.5",
+    "vitepress": "^1.6.4",
     "vitest": "^1.6.1",
     "vue-eslint-parser": "10.2.0",
     "vue-tsc": "3.2.1"

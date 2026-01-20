@@ -48,7 +48,7 @@ export const responseConfig: ResponseFormatConfig = {
   codeField: 'code',
   successCode: 0,
   dataField: 'data',
-  messageField: 'message',
+  messageField: 'msg',
   pagination: {
     totalField: 'total',
     pageField: 'page',

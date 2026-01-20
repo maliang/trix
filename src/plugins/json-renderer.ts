@@ -270,6 +270,8 @@ export function setupJsonRenderer(app: App): void {
     baseURL: jsonRendererConfig.baseURL,
     responseDataPath: jsonRendererConfig.responseDataPath,
     defaultHeaders: jsonRendererConfig.defaultHeaders,
+    // API 响应格式配置（业务状态码判断）
+    responseFormat: jsonRendererConfig.responseFormat,
     // 统一鉴权：让 schema 内的 fetch/initApi/uiApi 等请求也能自动携带 token（令牌）
     requestInterceptor: (config: RendererRequestConfig) => {
       const next: RendererRequestConfig = { ...config, headers: { ...(config.headers || {}) } };

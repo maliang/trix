@@ -20,6 +20,20 @@ export interface GlobalStateConfig {
 }
 
 /**
+ * API 响应格式配置（用于 vschema 插件）
+ */
+export interface VSchemaResponseFormat {
+  /** 业务状态码字段名 */
+  codeField: string;
+  /** 消息字段名 */
+  msgField: string;
+  /** 数据字段名 */
+  dataField: string;
+  /** 业务成功状态码 */
+  successCode: number | number[];
+}
+
+/**
  * JSON 渲染器配置接口
  */
 export interface JsonRendererConfig {
@@ -27,6 +41,8 @@ export interface JsonRendererConfig {
   baseURL: string;
   /** 响应数据提取路径（从响应中提取数据的字段路径） */
   responseDataPath: string;
+  /** API 响应格式配置（用于业务状态码判断） */
+  responseFormat: VSchemaResponseFormat;
   /** 默认请求头 */
   defaultHeaders: Record<string, string>;
   /** 是否启用开发模式（显示 Schema 编辑器等调试工具） */
@@ -47,7 +63,7 @@ export interface JsonRendererConfig {
 
 /**
  * 默认 JSON 渲染器配置
- * 注意：responseDataPath 从 responseConfig.dataField 获取，保持与通用请求配置一致
+ * 注意：responseFormat 从 responseConfig 获取，保持与通用请求配置一致
  */
 export const jsonRendererConfig: JsonRendererConfig = {
   // API 基础 URL，从环境变量读取
@@ -55,6 +71,14 @@ export const jsonRendererConfig: JsonRendererConfig = {
 
   // 响应数据提取路径（与 responseConfig.dataField 保持一致）
   responseDataPath: responseConfig.dataField,
+
+  // API 响应格式配置（与 responseConfig 保持一致）
+  responseFormat: {
+    codeField: responseConfig.codeField,
+    msgField: responseConfig.messageField,
+    dataField: responseConfig.dataField,
+    successCode: responseConfig.successCode as number
+  },
 
   // 默认请求头
   defaultHeaders: {
@@ -104,6 +128,10 @@ export function createJsonRendererConfig(customConfig: Partial<JsonRendererConfi
     globalState: {
       ...jsonRendererConfig.globalState,
       ...customConfig.globalState
+    },
+    responseFormat: {
+      ...jsonRendererConfig.responseFormat,
+      ...customConfig.responseFormat
     }
   };
 }
