@@ -254,7 +254,7 @@ export default defineConfig({
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/your-repo/trix' }
+      { icon: 'github', link: 'https://github.com/maliang/trix' }
     ],
 
     footer: {
@@ -317,7 +317,7 @@ export default defineConfig({
     },
 
     editLink: {
-      pattern: 'https://github.com/your-repo/trix/edit/main/docs/:path',
+      pattern: 'https://github.com/maliang/trix/edit/main/docs/:path',
       text: '在 GitHub 上编辑此页'
     }
   }

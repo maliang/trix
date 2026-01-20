@@ -15,7 +15,7 @@ A JSON-driven modern admin system based on Vue 3 + Naive UI + VSchema.
 
 ```bash
 # Clone the project
-git clone https://github.com/your-repo/trix.git
+git clone https://github.com/maliang/trix.git
 
 # Install dependencies
 pnpm install

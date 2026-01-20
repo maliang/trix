@@ -35,5 +35,5 @@ Trix Admin is a JSON-driven modern admin system based on Vue 3 + Naive UI + VSch
 
 ## Getting Help
 
-- [GitHub Issues](https://github.com/your-repo/trix/issues) - Report bugs or request features
-- [Discussions](https://github.com/your-repo/trix/discussions) - Ask questions and share ideas
+- [GitHub Issues](https://github.com/maliang/trix/issues) - Report bugs or request features
+- [Discussions](https://github.com/maliang/trix/discussions) - Ask questions and share ideas

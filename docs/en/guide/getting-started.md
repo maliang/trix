@@ -9,7 +9,7 @@
 
 ```bash
 # Clone the project
-git clone https://github.com/your-repo/trix.git
+git clone https://github.com/maliang/trix.git
 
 # Enter project directory
 cd trix
