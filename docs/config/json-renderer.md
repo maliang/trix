@@ -93,6 +93,19 @@ responseFormat: {
 }
 ```
 
+::: tip 配置同步
+`responseFormat` 从 `src/config/response.ts` 中的 `responseConfig` 自动映射，确保 JSON Schema 请求与普通请求使用相同的响应格式判断逻辑。
+
+| responseConfig | responseFormat | 说明 |
+|----------------|----------------|------|
+| `codeField` | `codeField` | 业务状态码字段 |
+| `messageField` | `msgField` | 消息字段（注意字段名不同） |
+| `dataField` | `dataField` | 数据字段 |
+| `successCode` | `successCode` | 成功状态码 |
+
+修改 `responseConfig` 后，`responseFormat` 会自动同步更新。
+:::
+
 #### 业务状态码判断
 
 当 API 返回的业务状态码不等于 `successCode` 时：
