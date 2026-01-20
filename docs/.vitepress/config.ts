@@ -227,40 +227,80 @@ export default defineConfig({
     root: {
       label: '简体中文',
       lang: 'zh-CN',
-      description: 'JSON 驱动的现代化后台管理系统'
+      description: 'JSON 驱动的现代化后台管理系统',
+      themeConfig: {
+        nav: [
+          { text: '指南', link: '/guide/', activeMatch: '/guide/' },
+          { text: 'JSON Schema', link: '/schema/', activeMatch: '/schema/' },
+          { text: '组件', link: '/components/', activeMatch: '/components/' },
+          { text: '配置', link: '/config/', activeMatch: '/config/' },
+          { text: 'API', link: '/api/', activeMatch: '/api/' }
+        ],
+        sidebar: zhSidebar,
+        outline: {
+          label: '页面导航',
+          level: [2, 3]
+        },
+        docFooter: {
+          prev: '上一页',
+          next: '下一页'
+        },
+        lastUpdated: {
+          text: '最后更新于'
+        },
+        editLink: {
+          pattern: 'https://github.com/maliang/trix/edit/main/docs/:path',
+          text: '在 GitHub 上编辑此页'
+        },
+        footer: {
+          message: '基于 MIT 许可发布',
+          copyright: 'Copyright © 2024 Trix Admin'
+        }
+      }
     },
     en: {
       label: 'English',
       lang: 'en-US',
       link: '/en/',
-      description: 'JSON-driven Modern Admin System'
+      description: 'JSON-driven Modern Admin System',
+      themeConfig: {
+        nav: [
+          { text: 'Guide', link: '/en/guide/', activeMatch: '/en/guide/' },
+          { text: 'JSON Schema', link: '/en/schema/', activeMatch: '/en/schema/' },
+          { text: 'Components', link: '/en/components/', activeMatch: '/en/components/' },
+          { text: 'Config', link: '/en/config/', activeMatch: '/en/config/' },
+          { text: 'API', link: '/en/api/', activeMatch: '/en/api/' }
+        ],
+        sidebar: enSidebar,
+        outline: {
+          label: 'On this page',
+          level: [2, 3]
+        },
+        docFooter: {
+          prev: 'Previous',
+          next: 'Next'
+        },
+        lastUpdated: {
+          text: 'Last updated'
+        },
+        editLink: {
+          pattern: 'https://github.com/maliang/trix/edit/main/docs/:path',
+          text: 'Edit this page on GitHub'
+        },
+        footer: {
+          message: 'Released under the MIT License',
+          copyright: 'Copyright © 2024 Trix Admin'
+        }
+      }
     }
   },
 
   themeConfig: {
     logo: '/logo.svg',
-    
-    nav: [
-      { text: '指南', link: '/guide/', activeMatch: '/guide/' },
-      { text: 'JSON Schema', link: '/schema/', activeMatch: '/schema/' },
-      { text: '组件', link: '/components/', activeMatch: '/components/' },
-      { text: '配置', link: '/config/', activeMatch: '/config/' },
-      { text: 'API', link: '/api/', activeMatch: '/api/' }
-    ],
-
-    sidebar: {
-      ...zhSidebar,
-      ...enSidebar
-    },
 
     socialLinks: [
       { icon: 'github', link: 'https://github.com/maliang/trix' }
     ],
-
-    footer: {
-      message: '基于 MIT 许可发布',
-      copyright: 'Copyright © 2024 Trix Admin'
-    },
 
     search: {
       provider: 'local',
@@ -300,25 +340,6 @@ export default defineConfig({
           }
         }
       }
-    },
-
-    outline: {
-      label: '页面导航',
-      level: [2, 3]
-    },
-
-    docFooter: {
-      prev: '上一页',
-      next: '下一页'
-    },
-
-    lastUpdated: {
-      text: '最后更新于'
-    },
-
-    editLink: {
-      pattern: 'https://github.com/maliang/trix/edit/main/docs/:path',
-      text: '在 GitHub 上编辑此页'
     }
   }
 })
