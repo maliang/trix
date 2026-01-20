@@ -1,21 +1,50 @@
-# Trix Admin
+---
+layout: home
 
-A JSON-driven modern admin system based on Vue 3 + Naive UI + VSchema.
+hero:
+  name: Trix Admin
+  text: JSON-driven Admin System
+  tagline: Built with Vue 3 + TypeScript + NaiveUI, configure pages with JSON Schema, say goodbye to repetitive template code
+  image:
+    src: /logo.svg
+    alt: Trix Admin
+  actions:
+    - theme: brand
+      text: Get Started
+      link: /en/guide/getting-started
+    - theme: alt
+      text: View on GitHub
+      link: https://github.com/maliang/trix
 
-## Features
-
-- 🚀 **JSON Driven** - Build pages declaratively with JSON Schema
-- 🎨 **Theme Customization** - Flexible theme configuration with dark mode support
-- 🔐 **Permission Control** - Fine-grained route and button permission management
-- 🌍 **Internationalization** - Built-in i18n support
-- 📦 **Rich Components** - Integrated NaiveUI and custom business components
-- ⚡ **Modern Stack** - Vue 3 + TypeScript + Vite + Pinia
+features:
+  - icon: 📝
+    title: JSON Driven
+    details: Configure pages with JSON Schema, no need to write lots of template code, quickly build admin interfaces
+  - icon: ⚡️
+    title: Rapid Development
+    details: Built with Vite 7, millisecond-level hot reload, complete TypeScript type support
+  - icon: 🎨
+    title: Theme Customization
+    details: Rich theme configuration options, dark mode support, multiple layout modes, custom theme colors
+  - icon: 🌍
+    title: Internationalization
+    details: Built-in Chinese and English support, easily extend to multiple languages
+  - icon: 🔐
+    title: Permission Control
+    details: Complete permission management system, supports route-level and button-level permission control
+  - icon: 📦
+    title: Rich Components
+    details: Integrated NaiveUI component library, provides icon picker, flow editor, rich text editor and more
+---
 
 ## Quick Start
 
 ```bash
 # Clone the project
 git clone https://github.com/maliang/trix.git
+
+# Enter project directory
+cd trix
 
 # Install dependencies
 pnpm install
@@ -24,9 +53,14 @@ pnpm install
 pnpm dev
 ```
 
-## Documentation
+## Tech Stack
 
-- [Getting Started](/en/guide/getting-started) - Quick start guide
-- [JSON Schema](/en/schema/) - JSON-driven page development
-- [Components](/en/components/) - Available components
-- [Configuration](/en/config/) - Project configuration
+| Technology | Version | Description |
+|------------|---------|-------------|
+| Vue | 3.5.x | Progressive JavaScript Framework |
+| Vite | 7.x | Next Generation Frontend Build Tool |
+| TypeScript | 5.x | JavaScript with Types |
+| NaiveUI | 2.x | Vue 3 Component Library |
+| UnoCSS | 66.x | Atomic CSS Engine |
+| Pinia | 3.x | Vue State Management |
+| @maliang47/vschema | 1.x | JSON Schema Rendering Engine |
