@@ -87,6 +87,40 @@ pnpm typecheck    # 类型检查
 pnpm test         # 运行测试
 ```
 
+## JSON 渲染器配置
+
+JSON Schema 渲染相关配置位于 `src/config/` 目录：
+
+### 响应格式配置 (`response.ts`)
+
+```typescript
+export const responseConfig = {
+  codeField: 'code',      // 业务状态码字段
+  dataField: 'data',      // 数据字段
+  messageField: 'msg',    // 消息字段（注意：vschema 使用 msgField）
+  successCode: 0          // 成功状态码
+}
+```
+
+API 默认返回格式：`{ code, msg, data }`
+
+### JSON 渲染器配置 (`json-renderer.ts`)
+
+```typescript
+export const jsonRendererConfig = {
+  baseURL: '',
+  responseDataPath: 'data',
+  responseFormat: {
+    codeField: 'code',
+    msgField: 'msg',       // 从 responseConfig.messageField 映射
+    dataField: 'data',
+    successCode: 0
+  },
+  timeout: 30000,
+  withToken: true
+}
+```
+
 ## Mock 数据
 
 Mock 数据位于 `public/mock/` 目录：
@@ -103,3 +137,18 @@ Mock 数据位于 `public/mock/` 目录：
 2. 深拷贝对象使用 `JSON.parse(JSON.stringify(obj))`
 3. CSS 变量更新需要手动调用更新函数或通过 watcher 监听
 4. 组件样式使用 `<style scoped>`，全局样式放在 `src/styles/`
+5. API 返回格式统一为 `{ code, msg, data }`，修改时需同步更新 `responseConfig` 和 `jsonRendererConfig`
+
+## 文档
+
+项目文档位于 `docs/` 目录，使用 VitePress 构建：
+
+```bash
+pnpm docs:dev     # 启动文档开发服务器
+pnpm docs:build   # 构建文档
+```
+
+文档结构：
+- `docs/` - 中文文档（默认）
+- `docs/en/` - 英文文档
+- `docs/.vitepress/config.ts` - VitePress 配置
