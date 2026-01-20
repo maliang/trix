@@ -72,7 +72,7 @@ baseURL: '/api'
 ```typescript
 responseDataPath: 'data'
 
-// 后端返回：{ code: 0, data: { list: [] }, message: 'ok' }
+// 后端返回：{ code: 0, data: { list: [] }, msg: 'ok' }
 // $response = { list: [] }
 ```
 

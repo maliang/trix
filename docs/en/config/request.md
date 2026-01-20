@@ -93,7 +93,7 @@ instance.interceptors.request.use(
 // Response interceptor
 instance.interceptors.response.use(
   (response) => {
-    const { code, data, message } = response.data
+    const { code, data, msg } = response.data
     
     // Success
     if (code === responseConfig.successCode) {
@@ -103,12 +103,12 @@ instance.interceptors.response.use(
     // Unauthorized
     if (code === 401) {
       router.push('/login')
-      return Promise.reject(new Error(message))
+      return Promise.reject(new Error(msg))
     }
     
     // Other errors
-    window.$message?.error(message)
-    return Promise.reject(new Error(message))
+    window.$message?.error(msg)
+    return Promise.reject(new Error(msg))
   },
   (error) => {
     // Network error

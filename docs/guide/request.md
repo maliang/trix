@@ -21,7 +21,7 @@ service/
 {
   "code": 0,
   "data": { ... },
-  "message": "success"
+  "msg": "success"
 }
 ```
 
@@ -57,7 +57,7 @@ instance.interceptors.request.use((config) => {
 ```typescript
 instance.interceptors.response.use(
   (response) => {
-    const { code, data, message } = response.data
+    const { code, data, msg } = response.data
     
     if (code === 0) {
       return data
@@ -69,8 +69,8 @@ instance.interceptors.response.use(
       router.push('/login')
     }
     
-    window.$message?.error(message)
-    return Promise.reject(new Error(message))
+    window.$message?.error(msg)
+    return Promise.reject(new Error(msg))
   },
   (error) => {
     window.$message?.error('网络错误')

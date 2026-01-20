@@ -314,7 +314,7 @@ export const jsonRendererConfig = {
 配置 `responseDataPath` 后，`$response` 会自动提取指定路径的数据：
 
 ```json
-// 后端返回：{ code: 0, data: { list: [], total: 100 }, message: 'success' }
+// 后端返回：{ code: 0, data: { list: [], total: 100 }, msg: 'success' }
 // responseDataPath: 'data'
 // $response = { list: [], total: 100 }
 ```

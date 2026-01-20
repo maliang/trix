@@ -93,7 +93,7 @@ instance.interceptors.request.use(
 // 响应拦截器
 instance.interceptors.response.use(
   (response) => {
-    const { code, data, message } = response.data
+    const { code, data, msg } = response.data
     
     // 成功
     if (code === responseConfig.successCode) {
@@ -104,12 +104,12 @@ instance.interceptors.response.use(
     if (code === 401) {
       // 跳转登录页
       router.push('/login')
-      return Promise.reject(new Error(message))
+      return Promise.reject(new Error(msg))
     }
     
     // 其他错误
-    window.$message?.error(message)
-    return Promise.reject(new Error(message))
+    window.$message?.error(msg)
+    return Promise.reject(new Error(msg))
   },
   (error) => {
     // 网络错误

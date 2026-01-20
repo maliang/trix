@@ -72,7 +72,7 @@ Response data extraction path, `$response` automatically extracts data from this
 ```typescript
 responseDataPath: 'data'
 
-// Backend returns: { code: 0, data: { list: [] }, message: 'ok' }
+// Backend returns: { code: 0, data: { list: [] }, msg: 'ok' }
 // $response = { list: [] }
 ```
 
