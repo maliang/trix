@@ -1,0 +1,47 @@
+<script lang="ts" setup>
+import { computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { $t } from '@/locales';
+
+defineOptions({ name: 'ExceptionBase' });
+
+type ExceptionType = '403' | '404' | '500';
+
+interface Props {
+  /**
+   * 异常类型
+   *
+   * - 403: 无权限
+   * - 404: 未找到
+   * - 500: 服务错误
+   */
+  type: ExceptionType;
+}
+
+const props = defineProps<Props>();
+
+const router = useRouter();
+
+const iconMap: Record<ExceptionType, string> = {
+  '403': 'no-permission',
+  '404': 'not-found',
+  '500': 'service-error'
+};
+
+const icon = computed(() => iconMap[props.type]);
+
+function goHome() {
+  router.push('/');
+}
+</script>
+
+<template>
+  <div class="size-full min-h-520px flex-col-center gap-24px overflow-hidden">
+    <div class="flex text-400px text-primary">
+      <SvgIcon :local-icon="icon" />
+    </div>
+    <NButton type="primary" @click="goHome">{{ $t('common.backToHome') }}</NButton>
+  </div>
+</template>
+
+<style scoped></style>
