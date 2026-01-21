@@ -5,6 +5,7 @@ import { useAuthStore } from '@/store/modules/auth';
 import { useRouter } from 'vue-router';
 import { $t } from '@/locales';
 import SvgIcon from '@/components/custom/svg-icon.vue';
+import { get, post } from '@/service/request';
 import type { JsonNode } from '@maliang47/vschema';
 
 defineOptions({
@@ -152,25 +153,19 @@ async function submitForm(formData?: Record<string, any>) {
     return;
   }
 
-  try {
-    const response = await fetch(config.submitApi, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(formData || {})
-    });
+  // 使用系统标准请求
+  const { error } = await post(config.submitApi, formData || {}, {
+    showErrorMessage: false
+  });
 
-    if (response.ok) {
-      window.$message?.success('保存成功');
-      closeModal();
-    } else {
-      window.$message?.error('保存失败');
-    }
-  } catch (error) {
-    console.error('[UserAvatar] 提交表单失败:', error);
+  if (error) {
+    console.error('[UserAvatar] 提交表单失败:', error.message);
     window.$message?.error('提交失败');
+    return;
   }
+
+  window.$message?.success('保存成功');
+  closeModal();
 }
 
 /** 提供给 JsonRenderer 的方法 */
@@ -192,15 +187,13 @@ async function openModal(item: MenuItemConfig) {
   // 如果有 uiApi，加载 Schema
   if (item.modal.uiApi) {
     modalLoading.value = true;
-    try {
-      const response = await fetch(item.modal.uiApi);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      modalSchema.value = data;
-    } catch (error) {
-      console.error('[UserAvatar] 加载弹窗内容失败:', error);
+    // 使用系统标准请求
+    const { data, error } = await get<JsonNode>(item.modal.uiApi, {}, {
+      showErrorMessage: false
+    });
+
+    if (error) {
+      console.error('[UserAvatar] 加载弹窗内容失败:', error.message);
       modalSchema.value = {
         com: 'NResult',
         props: {
@@ -209,9 +202,10 @@ async function openModal(item: MenuItemConfig) {
           description: '无法加载弹窗内容'
         }
       };
-    } finally {
-      modalLoading.value = false;
+    } else {
+      modalSchema.value = data;
     }
+    modalLoading.value = false;
   }
 }
 

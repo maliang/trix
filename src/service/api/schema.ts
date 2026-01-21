@@ -5,6 +5,7 @@
 
 import type { JsonNode } from '@maliang47/vschema';
 import { responseConfig, getValueByPath } from '@/config/response';
+import { get } from '@/service/request';
 
 /**
  * 获取页面 Schema
@@ -51,38 +52,21 @@ async function fetchStaticSchema(path: string): Promise<JsonNode> {
  * @returns Schema 数据
  */
 async function fetchApiSchema(url: string): Promise<JsonNode> {
-  const baseURL = import.meta.env.VITE_SERVICE_BASE_URL || '';
-  const finalUrl = url.startsWith('http') ? url : `${baseURL}${url}`;
-
-  const response = await fetch(finalUrl, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
+  // 使用系统标准请求
+  const { data, error } = await get<JsonNode>(url, {}, {
+    showErrorMessage: false
   });
 
-  if (!response.ok) {
-    throw new Error(`获取 Schema 失败: ${response.status} ${response.statusText}`);
+  if (error) {
+    throw new Error(`获取 Schema 失败: ${error.message}`);
   }
 
-  // 解析响应，支持两种格式：
-  // - 原始 JsonNode: { com, props, children, ... }
-  // - 包装响应: { code, data, message, ... } 其中 data 是 JsonNode
-  const raw = (await response.json()) as unknown;
-  
-  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
-    const responseObj = raw as Record<string, unknown>;
-    
-    // 使用统一的响应配置检查是否为包装响应
-    const code = getValueByPath(responseObj, responseConfig.codeField);
-    
-    // 如果存在 code 字段，说明是包装响应，提取 data
-    if (code !== undefined) {
-      const data = getValueByPath(responseObj, responseConfig.dataField);
-      return (data ?? responseObj) as JsonNode;
-    }
+  // 标准请求已经处理了响应格式，直接返回 data
+  if (data) {
+    return data;
   }
 
-  return raw as JsonNode;
+  throw new Error('获取 Schema 失败: 返回数据为空');
 }
 
 /**

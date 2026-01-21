@@ -4,10 +4,22 @@ import { DARK_CLASS } from '@/config/constants';
 import { toggleHtmlClass } from '@/utils/common';
 import { themeVars } from '@/styles/vars';
 
+/** 获取带 base URL 的路径 */
+export function getBaseUrl(path: string): string {
+  const base = import.meta.env.VITE_BASE_URL || '/';
+  // 如果路径已经是完整 URL 或已包含 base，直接返回
+  if (path.startsWith('http') || path.startsWith(base)) {
+    return path;
+  }
+  // 移除路径开头的 /，然后拼接 base
+  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+  return `${base}${cleanPath}`;
+}
+
 /** 默认主题设置 */
 export const themeSettings: App.Theme.ThemeSetting = {
   appTitle: 'Trix Admin',
-  logo: '/favicon.svg',
+  logo: getBaseUrl('/favicon.svg'),
   themeScheme: 'light',
   grayscale: false,
   colourWeakness: false,

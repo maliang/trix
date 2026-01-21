@@ -5,7 +5,20 @@ import { localStg } from '@/utils/storage';
 import { toggleHtmlClass } from '@/utils/common';
 
 /** 默认 Logo 图片路径 */
-const DEFAULT_LOGO = '/favicon.svg';
+const BASE_URL = import.meta.env.VITE_BASE_URL || '/';
+const DEFAULT_LOGO = `${BASE_URL}favicon.svg`;
+
+/** 获取带 base URL 的路径 */
+function getBaseUrl(path: string): string {
+  if (!path) return DEFAULT_LOGO;
+  // 如果路径已经是完整 URL 或已包含 base，直接返回
+  if (path.startsWith('http') || path.startsWith(BASE_URL)) {
+    return path;
+  }
+  // 移除路径开头的 /，然后拼接 base
+  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+  return `${BASE_URL}${cleanPath}`;
+}
 
 /** 默认应用标题 */
 const DEFAULT_APP_TITLE = 'Trix Admin';
@@ -13,7 +26,7 @@ const DEFAULT_APP_TITLE = 'Trix Admin';
 export function setupLoading() {
   // 从缓存中获取主题设置
   const cachedSettings = localStg.get('themeSettings');
-  const logoPath = cachedSettings?.logo || DEFAULT_LOGO;
+  const logoPath = getBaseUrl(cachedSettings?.logo || '');
   const appTitle = cachedSettings?.appTitle || DEFAULT_APP_TITLE;
   
   const themeColor = localStg.get('themeColor') || '#646cff';

@@ -56,6 +56,16 @@ function buildRequestInit(config: RequestConfig): RequestInit {
   const method = (config.method || 'GET').toUpperCase();
   const headers: Record<string, string> = { ...(config.headers || {}) };
 
+  // 默认接受 JSON 响应
+  if (!headers['Accept']) {
+    headers['Accept'] = 'application/json';
+  }
+
+  // 默认 Content-Type 为 JSON（让后端识别为 JSON 请求）
+  if (!headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
+  }
+
   const init: RequestInit = {
     method,
     headers
@@ -70,8 +80,7 @@ function buildRequestInit(config: RequestConfig): RequestInit {
     } else if (typeof config.data === 'string') {
       init.body = config.data;
     } else {
-      // 默认 JSON
-      if (!headers['Content-Type']) headers['Content-Type'] = 'application/json';
+      // JSON 数据
       init.body = JSON.stringify(config.data);
     }
   }
@@ -92,12 +101,18 @@ export async function request<T = unknown>(config: RequestConfig): Promise<Reque
 
   // 应用全局拦截器配置（用于统一鉴权等）
   const adapterConfig = getAdapterConfig();
-  const applyRequest = createRequestInterceptor({
+  const requestInterceptorConfig: Record<string, unknown> = {
     addToken: config.withToken ?? true,
-    tokenHeader: config.tokenHeader,
-    tokenPrefix: config.tokenPrefix,
     ...adapterConfig.request
-  });
+  };
+  // 只有明确指定时才覆盖默认值
+  if (config.tokenHeader !== undefined) {
+    requestInterceptorConfig.tokenHeader = config.tokenHeader;
+  }
+  if (config.tokenPrefix !== undefined) {
+    requestInterceptorConfig.tokenPrefix = config.tokenPrefix;
+  }
+  const applyRequest = createRequestInterceptor(requestInterceptorConfig);
   const responseInterceptor = createResponseInterceptor(adapterConfig.response);
 
   try {
@@ -171,7 +186,7 @@ export async function request<T = unknown>(config: RequestConfig): Promise<Reque
 export async function get<T = unknown>(
   url: string,
   params?: Record<string, unknown>,
-  config?: RequestConfig
+  config?: Omit<RequestConfig, 'url' | 'method' | 'params'>
 ): Promise<RequestResult<T>> {
   return request<T>({
     ...(config || {}),
@@ -184,7 +199,7 @@ export async function get<T = unknown>(
 export async function post<T = unknown>(
   url: string,
   data?: Record<string, unknown>,
-  config?: RequestConfig
+  config?: Omit<RequestConfig, 'url' | 'method' | 'data'>
 ): Promise<RequestResult<T>> {
   return request<T>({
     ...(config || {}),
@@ -197,7 +212,7 @@ export async function post<T = unknown>(
 export async function put<T = unknown>(
   url: string,
   data?: Record<string, unknown>,
-  config?: RequestConfig
+  config?: Omit<RequestConfig, 'url' | 'method' | 'data'>
 ): Promise<RequestResult<T>> {
   return request<T>({
     ...(config || {}),
@@ -210,7 +225,7 @@ export async function put<T = unknown>(
 export async function del<T = unknown>(
   url: string,
   params?: Record<string, unknown>,
-  config?: RequestConfig
+  config?: Omit<RequestConfig, 'url' | 'method' | 'params'>
 ): Promise<RequestResult<T>> {
   return request<T>({
     ...(config || {}),

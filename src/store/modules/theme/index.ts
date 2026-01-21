@@ -5,9 +5,11 @@ import { defineStore } from 'pinia';
 import { getPaletteColorByNumber } from '@trix/color';
 import { localStg } from '@/utils/storage';
 import { SetupStoreId } from '@/store/plugins';
+import { get, post } from '@/service/request';
 import {
   addThemeVarsToGlobal,
   createThemeToken,
+  getBaseUrl,
   getNaiveTheme,
   themeSettings as defaultThemeSettings,
   toggleAuxiliaryColorModes,
@@ -140,7 +142,7 @@ export const useThemeStore = defineStore(SetupStoreId.Theme, () => {
 
   /** 应用 Logo */
   const logo = computed({
-    get: () => settings.value.logo,
+    get: () => getBaseUrl(settings.value.logo),
     set: (val) => { settings.value.logo = val; }
   });
 
@@ -175,27 +177,28 @@ export const useThemeStore = defineStore(SetupStoreId.Theme, () => {
       return true;
     }
 
-    try {
-      const response = await fetch(THEME_CONFIG_API);
-      if (!response.ok) {
-        console.log('[ThemeStore] 远程主题配置加载失败，使用缓存或默认配置');
-        return false;
-      }
+    // 使用系统标准请求，不携带 token，不显示错误消息
+    const { data, error } = await get<App.Theme.ThemeSetting>(THEME_CONFIG_API, {}, {
+      withToken: false,
+      showErrorMessage: false
+    });
 
-      const remoteSettings = await response.json();
-      if (remoteSettings && typeof remoteSettings === 'object') {
-        // 合并远程配置到当前设置（远程配置优先）
-        settings.value = { ...defaultThemeSettings, ...settings.value, ...remoteSettings };
-        // 标记已加载
-        remoteConfigLoaded.value = true;
-        // 保存到缓存
-        cacheThemeSettings();
-        console.log('[ThemeStore] 已加载远程主题配置并保存到缓存');
-        return true;
-      }
-    } catch {
+    if (error || !data) {
       console.log('[ThemeStore] 远程主题配置加载失败，使用缓存或默认配置');
+      return false;
     }
+
+    if (data && typeof data === 'object') {
+      // 合并远程配置到当前设置（远程配置优先）
+      settings.value = { ...defaultThemeSettings, ...settings.value, ...data };
+      // 标记已加载
+      remoteConfigLoaded.value = true;
+      // 保存到缓存
+      cacheThemeSettings();
+      console.log('[ThemeStore] 已加载远程主题配置并保存到缓存');
+      return true;
+    }
+
     return false;
   }
 
@@ -203,23 +206,23 @@ export const useThemeStore = defineStore(SetupStoreId.Theme, () => {
    * 保存主题配置到服务器
    */
   async function saveRemoteThemeConfig(): Promise<boolean> {
-    try {
-      const response = await fetch(THEME_CONFIG_API, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(settings.value)
-      });
-
-      if (response.ok) {
-        console.log('[ThemeStore] 主题配置已保存到服务器');
-        return true;
-      }
-    } catch (error) {
-      console.error('[ThemeStore] 保存主题配置失败:', error);
+    if (!THEME_CONFIG_API) {
+      console.log('[ThemeStore] 未配置主题配置 API 地址，无法保存');
+      return false;
     }
-    return false;
+
+    // 使用系统标准请求
+    const { error } = await post(THEME_CONFIG_API, settings.value as unknown as Record<string, unknown>, {
+      showErrorMessage: false
+    });
+
+    if (error) {
+      console.error('[ThemeStore] 保存主题配置失败:', error.message);
+      return false;
+    }
+
+    console.log('[ThemeStore] 主题配置已保存到服务器');
+    return true;
   }
 
   /**

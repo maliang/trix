@@ -1,14 +1,33 @@
 import type { App } from 'vue';
-import { createRouter, createWebHistory } from 'vue-router';
+import type { RouterHistory } from 'vue-router';
+import { createRouter, createWebHashHistory, createWebHistory, createMemoryHistory } from 'vue-router';
 import { routes, staticRoutes, builtinRoutes, dynamicRoutes, notFoundRoute } from './routes';
 import { setupRouterGuard, setRouterGuardOptions, getDefaultAfterLoginRoutes } from './guard';
 import type { RouterGuardOptions } from './guard';
 
 /**
+ * 根据环境变量创建路由历史模式
+ */
+function createRouterHistory(): RouterHistory {
+  const mode = import.meta.env.VITE_ROUTER_MODE || 'hash';
+  const baseUrl = import.meta.env.VITE_BASE_URL;
+
+  switch (mode) {
+    case 'history':
+      return createWebHistory(baseUrl);
+    case 'memory':
+      return createMemoryHistory(baseUrl);
+    case 'hash':
+    default:
+      return createWebHashHistory(baseUrl);
+  }
+}
+
+/**
  * 创建路由实例
  */
 const router = createRouter({
-  history: createWebHistory(import.meta.env.VITE_BASE_URL),
+  history: createRouterHistory(),
   routes,
   scrollBehavior: () => ({ left: 0, top: 0 })
 });

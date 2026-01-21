@@ -3,6 +3,7 @@ import { defineStore } from 'pinia';
 import { useLoading } from '@trix/hooks';
 import { localStg } from '@/utils/storage';
 import { SetupStoreId } from '@/store/plugins';
+import { get, post } from '@/service/request';
 import { clearAuthStorage, getToken } from './shared';
 import { router } from '@/router';
 
@@ -128,21 +129,40 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
 
   /**
    * 获取用户信息
-   * 这里使用模拟数据，实际项目中应该调用 API
    * @returns 是否获取成功
    */
   async function getUserInfo(): Promise<boolean> {
-    // TODO: 实际项目中应该调用 API 获取用户信息
-    // const { data, error } = await fetchGetUserInfo();
-    
-    // 模拟用户信息
-    const mockUserInfo: UserInfo = {
-      userId: '1',
-      userName: 'Admin',
-      permissions: ['admin', 'user:add', 'user:edit', 'user:delete', 'btn:add', 'btn:edit', 'btn:delete']
-    };
+    // 如果是模拟模式，使用模拟数据
+    if (import.meta.env.VITE_AUTH_MOCK === 'Y') {
+      const mockUserInfo: UserInfo = {
+        userId: '1',
+        userName: 'Admin',
+        permissions: ['admin', 'user:add', 'user:edit', 'user:delete', 'btn:add', 'btn:edit', 'btn:delete']
+      };
+      Object.assign(userInfo, mockUserInfo);
+      return true;
+    }
 
-    Object.assign(userInfo, mockUserInfo);
+    // 正式模式：调用 API 获取用户信息
+    const userInfoApi = import.meta.env.VITE_USER_INFO_API || '/user';
+    const { data, error } = await get<{
+      id: number;
+      name: string;
+      nick_name: string;
+      permissions: string[];
+    }>(userInfoApi, {}, { showErrorMessage: false });
+
+    if (error || !data) {
+      console.error('获取用户信息失败:', error);
+      return false;
+    }
+
+    Object.assign(userInfo, {
+      userId: String(data.id),
+      userName: data.nick_name || data.name,
+      permissions: data.permissions || []
+    });
+
     return true;
   }
 
@@ -172,47 +192,68 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     startLoading();
 
     try {
-      // 模拟登录验证：用户名 admin，密码 123456
-      if (userName !== 'admin' || password !== '123456') {
-        window.$message?.error('用户名或密码错误');
-        return;
-      }
-      
-      // 模拟登录成功
-      const mockLoginToken: LoginToken = {
-        token: 'mock-token-' + Date.now(),
-        refreshToken: 'mock-refresh-token-' + Date.now()
-      };
+      let loginToken: LoginToken;
 
-      const pass = await loginByToken(mockLoginToken);
+      // 如果是模拟模式，使用模拟登录
+      if (import.meta.env.VITE_AUTH_MOCK === 'Y') {
+        // 模拟登录验证：用户名 admin，密码 123456
+        if (userName !== 'admin' || password !== '123456') {
+          window.$message?.error('用户名或密码错误');
+          return;
+        }
+        loginToken = {
+          token: 'mock-token-' + Date.now(),
+          refreshToken: 'mock-refresh-token-' + Date.now()
+        };
+      } else {
+        // 正式模式：调用 API 登录
+        const loginApi = import.meta.env.VITE_LOGIN_API || '/login';
+        const { data, error } = await post<{
+          token: string;
+        }>(loginApi, { username: userName, password });
 
-      if (pass) {
-        // 检查是否需要清除标签页（用户切换时）
-        checkTabClear();
-
-        // 登录成功后初始化路由
-        const { useRouteStore } = await import('@/store/modules/route');
-        const routeStore = useRouteStore();
-        await routeStore.initAuthRoute();
-
-        if (redirect) {
-          // 重定向逻辑：
-          // 1. 如果有 redirect 查询参数，跳转到该页面
-          // 2. 否则根据 isDefaultAfterLogin 配置决定跳转目标
-          const currentRoute = router.currentRoute.value;
-          const queryRedirect = currentRoute.query.redirect as string;
-          const defaultPath = routeStore.getDefaultRedirectPath();
-          const redirectPath = queryRedirect || defaultPath;
-          await router.push(redirectPath);
+        if (error || !data) {
+          return;
         }
 
-        // 显示登录成功提示
-        window.$notification?.success({
-          title: '登录成功',
-          content: `欢迎回来，${userInfo.userName}`,
-          duration: 4500
-        });
+        loginToken = {
+          token: data.token,
+          refreshToken: data.token
+        };
       }
+
+      const pass = await loginByToken(loginToken);
+
+      if (!pass) {
+        window.$message?.error('获取用户信息失败，请重试');
+        return;
+      }
+
+      // 检查是否需要清除标签页（用户切换时）
+      checkTabClear();
+
+      // 登录成功后初始化路由
+      const { useRouteStore } = await import('@/store/modules/route');
+      const routeStore = useRouteStore();
+      await routeStore.initAuthRoute();
+
+      if (redirect) {
+        // 重定向逻辑：
+        // 1. 如果有 redirect 查询参数，跳转到该页面
+        // 2. 否则根据 isDefaultAfterLogin 配置决定跳转目标
+        const currentRoute = router.currentRoute.value;
+        const queryRedirect = currentRoute.query.redirect as string;
+        const defaultPath = routeStore.getDefaultRedirectPath();
+        const redirectPath = queryRedirect || defaultPath;
+        await router.push(redirectPath);
+      }
+
+      // 显示登录成功提示
+      window.$notification?.success({
+        title: '登录成功',
+        content: `欢迎回来，${userInfo.userName}`,
+        duration: 4500
+      });
     } catch (error) {
       console.error('登录失败:', error);
       resetStore();

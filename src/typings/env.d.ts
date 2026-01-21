@@ -46,6 +46,14 @@ declare namespace Env {
     readonly VITE_OTHER_SERVICE_BASE_URL?: string;
     /** 菜单路由 API 地址 */
     readonly VITE_MENU_ROUTE_URL?: string;
+    /** 路由模式：hash | history | memory */
+    readonly VITE_ROUTER_MODE?: 'hash' | 'history' | 'memory';
+    /** 是否使用模拟认证（Y 为模拟模式，其他为正式模式） */
+    readonly VITE_AUTH_MOCK?: CommonType.YesOrNo;
+    /** 登录 API 地址 */
+    readonly VITE_LOGIN_API?: string;
+    /** 获取用户信息 API 地址 */
+    readonly VITE_USER_INFO_API?: string;
   }
 }
 

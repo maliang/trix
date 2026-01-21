@@ -2,6 +2,7 @@
 import { computed, watch, onMounted } from 'vue';
 import { $t } from '@/locales';
 import { useAppStore } from '@/store/modules/app';
+import { post } from '@/service/request';
 
 defineOptions({
   name: 'LangSwitch'
@@ -69,16 +70,13 @@ const dropdownOptions = computed(() => {
 async function submitLangChange(lang: App.I18n.LangType) {
   if (!props.submitUrl) return;
 
-  try {
-    await fetch(props.submitUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ lang })
-    });
-  } catch (error) {
-    console.error('[LangSwitch] 提交语言切换请求失败:', error);
+  // 使用系统标准请求
+  const { error } = await post(props.submitUrl, { lang }, {
+    showErrorMessage: false
+  });
+
+  if (error) {
+    console.error('[LangSwitch] 提交语言切换请求失败:', error.message);
   }
 }
 
