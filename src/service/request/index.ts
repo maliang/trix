@@ -113,7 +113,13 @@ export async function request<T = unknown>(config: RequestConfig): Promise<Reque
     requestInterceptorConfig.tokenPrefix = config.tokenPrefix;
   }
   const applyRequest = createRequestInterceptor(requestInterceptorConfig);
-  const responseInterceptor = createResponseInterceptor(adapterConfig.response);
+  
+  // 根据 showErrorMessage 配置决定是否自动处理错误
+  const responseInterceptorConfig = {
+    ...adapterConfig.response,
+    autoHandleError: config.showErrorMessage !== false
+  };
+  const responseInterceptor = createResponseInterceptor(responseInterceptorConfig);
 
   try {
     const interceptedConfig = applyRequest(config);

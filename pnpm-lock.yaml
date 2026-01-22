@@ -18,8 +18,8 @@ importers:
         specifier: 5.0.0
         version: 5.0.0(vue@3.5.26(typescript@5.9.3))
       '@maliang47/vschema':
-        specifier: link:..\vschema
-        version: link:../vschema
+        specifier: ^1.2.4
+        version: 1.2.4(vue@3.5.26(typescript@5.9.3))
       '@trix/color':
         specifier: workspace:*
         version: link:packages/color
@@ -1035,6 +1035,11 @@ packages:
 
   '@juggle/resize-observer@3.4.0':
     resolution: {integrity: sha512-dfLbk+PwWvFzSxwk3n5ySL0hfBog779o8h68wK/7/APo/7cgyWp5jcXockbxdk5kFRkbeXWm4Fbi9FrdN381sA==}
+
+  '@maliang47/vschema@1.2.4':
+    resolution: {integrity: sha512-cjdyiF2BElHN26MTLoh/sYqJG2gscUMw61EiPHn2Dpgo0LU6Zr18uBq+RfP4Fk4n8Xeaii2xlC/uubF9qhfn5g==}
+    peerDependencies:
+      vue: ^3.3.0
 
   '@napi-rs/wasm-runtime@0.2.12':
     resolution: {integrity: sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ==}
@@ -5083,6 +5088,10 @@ snapshots:
       '@jridgewell/sourcemap-codec': 1.5.5
 
   '@juggle/resize-observer@3.4.0': {}
+
+  '@maliang47/vschema@1.2.4(vue@3.5.26(typescript@5.9.3))':
+    dependencies:
+      vue: 3.5.26(typescript@5.9.3)
 
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:

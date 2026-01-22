@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, h, ref, resolveComponent, provide } from 'vue';
+import { computed, h, ref, resolveComponent } from 'vue';
 import type { VNode } from 'vue';
 import { useAuthStore } from '@/store/modules/auth';
 import { useRouter } from 'vue-router';

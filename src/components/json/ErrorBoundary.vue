@@ -5,7 +5,7 @@
  * 需求: 10.4 - 当发生 schema 验证错误时，系统应显示有帮助的错误消息
  */
 import { ref, onErrorCaptured, provide, readonly } from 'vue';
-import { NResult, NButton, NSpace, NCollapse, NCollapseItem, NCode, NAlert } from 'naive-ui';
+import { NResult, NButton, NSpace, NCollapse, NCollapseItem, NCode } from 'naive-ui';
 
 defineOptions({
   name: 'ErrorBoundary'

@@ -1,17 +1,5 @@
 [
   {
-    "name": "login",
-    "path": "/login",
-    "meta": {
-      "title": "登录",
-      "requiresAuth": false,
-      "layoutType": "blank",
-      "hideInMenu": true,
-      "useJsonRenderer": true,
-      "schemaSource": "/mock/schema/login.json"
-    }
-  },
-  {
     "name": "forbidden",
     "path": "/403",
     "meta": {

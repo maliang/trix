@@ -35,12 +35,17 @@ async function fetchStaticSchema(path: string): Promise<JsonNode> {
     const response = await fetch(path);
     
     if (!response.ok) {
-      throw new Error(`获取 Schema 失败: ${response.status} ${response.statusText}`);
+      const error = new Error(`获取 Schema 失败: ${response.status} ${response.statusText}`);
+      (error as any).status = response.status;
+      throw error;
     }
 
     const schema = await response.json();
     return schema as JsonNode;
   } catch (error) {
+    if (error instanceof Error && (error as any).status) {
+      throw error;
+    }
     const message = error instanceof Error ? error.message : '获取 Schema 失败';
     throw new Error(message);
   }
@@ -53,12 +58,15 @@ async function fetchStaticSchema(path: string): Promise<JsonNode> {
  */
 async function fetchApiSchema(url: string): Promise<JsonNode> {
   // 使用系统标准请求
-  const { data, error } = await get<JsonNode>(url, {}, {
+  const { data, error, response } = await get<JsonNode>(url, {}, {
     showErrorMessage: false
   });
 
   if (error) {
-    throw new Error(`获取 Schema 失败: ${error.message}`);
+    const err = new Error(`获取 Schema 失败: ${error.message}`);
+    // 从 response 或 error 中提取 HTTP 状态码
+    (err as any).status = response?.status || (error as any).status || null;
+    throw err;
   }
 
   // 标准请求已经处理了响应格式，直接返回 data

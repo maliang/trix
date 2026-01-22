@@ -389,3 +389,145 @@ Complex logic can use `script`:
   }
 }
 ```
+
+## Built-in Methods
+
+Trix Admin provides a set of built-in methods that can be called in Schema via `$methods`.
+
+### $nav - Navigation Methods
+
+Page navigation operations:
+
+```json
+// Navigate to specified path
+{ "call": "$methods.$nav.push", "args": ["/user/profile"] }
+
+// Navigate with parameters
+{ "call": "$methods.$nav.push", "args": [{ "path": "/user", "query": { "id": "{{ userId }}" } }] }
+
+// Replace current page (no history)
+{ "call": "$methods.$nav.replace", "args": ["/login"] }
+
+// Go back
+{ "call": "$methods.$nav.back" }
+
+// Go back multiple steps
+{ "call": "$methods.$nav.back", "args": [2] }
+
+// Go forward
+{ "call": "$methods.$nav.forward" }
+```
+
+### $tab - Tab Methods
+
+Multi-tab management:
+
+```json
+// Close current tab
+{ "call": "$methods.$tab.close" }
+
+// Close specified tab
+{ "call": "$methods.$tab.close", "args": ["/user/list"] }
+
+// Close current tab and navigate to home
+{ "call": "$methods.$tab.closeAndGo", "args": ["/home"] }
+
+// Close other tabs
+{ "call": "$methods.$tab.closeOthers" }
+
+// Close tabs on the left
+{ "call": "$methods.$tab.closeLeft" }
+
+// Close tabs on the right
+{ "call": "$methods.$tab.closeRight" }
+
+// Open new tab and navigate
+{ "call": "$methods.$tab.open", "args": ["/user/detail/{{ id }}"] }
+
+// Open new tab with custom title
+{ "call": "$methods.$tab.open", "args": ["/user/detail/{{ id }}", "User Detail"] }
+
+// Open iframe tab
+{ "call": "$methods.$tab.openIframe", "args": ["https://example.com", "External Page"] }
+
+// Refresh current tab
+{ "call": "$methods.$tab.refresh" }
+
+// Pin tab
+{ "call": "$methods.$tab.fix" }
+
+// Unpin tab
+{ "call": "$methods.$tab.unfix" }
+```
+
+### $window - Window Methods
+
+Browser window operations:
+
+```json
+// Open URL in new window
+{ "call": "$methods.$window.open", "args": ["https://example.com"] }
+
+// Specify window name
+{ "call": "$methods.$window.open", "args": ["https://example.com", "_blank"] }
+
+// Close current window
+{ "call": "$methods.$window.close" }
+
+// Print current page
+{ "call": "$methods.$window.print" }
+```
+
+### Practical Examples
+
+#### Close Tab After Form Submit
+
+```json
+{
+  "methods": {
+    "handleSubmit": [
+      { "set": "loading", "value": true },
+      {
+        "fetch": "/api/user",
+        "method": "POST",
+        "body": "{{ form }}",
+        "then": [
+          { "call": "$message.success", "args": ["Saved successfully"] },
+          { "call": "$methods.$tab.closeAndGo", "args": ["/user/list"] }
+        ],
+        "catch": [
+          { "call": "$message.error", "args": ["Save failed"] }
+        ],
+        "finally": [
+          { "set": "loading", "value": false }
+        ]
+      }
+    ]
+  }
+}
+```
+
+#### Quick Action Buttons
+
+```json
+{
+  "com": "NSpace",
+  "children": [
+    {
+      "com": "NButton",
+      "props": { "type": "primary" },
+      "events": {
+        "click": { "call": "$methods.$nav.push", "args": ["/system/user"] }
+      },
+      "children": "User Management"
+    },
+    {
+      "com": "NButton",
+      "events": {
+        "click": { "call": "$methods.$window.open", "args": ["https://docs.example.com"] }
+      },
+      "children": "View Documentation"
+    }
+  ]
+}
+```

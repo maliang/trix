@@ -2,7 +2,7 @@
 import { computed, resolveComponent } from 'vue';
 import { NSpin } from 'naive-ui';
 import type { JsonNode } from '@maliang47/vschema';
-import { useSchemaLoader } from '@/hooks';
+import { useSchemaLoader, useSchemaMethods } from '@/hooks';
 
 defineOptions({
   name: 'HeaderRight'
@@ -22,6 +22,9 @@ const props = withDefaults(defineProps<Props>(), {
 
 // 使用 resolveComponent 获取全局注册的 VSchema 组件
 const VSchemaComponent = resolveComponent('VSchema');
+
+// 获取 Schema 内置方法
+const { schemaMethods } = useSchemaMethods();
 
 const { schema, loading } = useSchemaLoader({
   source: computed(() => props.schemaSource || null),
@@ -58,7 +61,6 @@ const finalSchema = computed<JsonNode | null>(() => {
   }
   return defaultHeaderSchema;
 });
-
 </script>
 
 <template>
@@ -67,7 +69,7 @@ const finalSchema = computed<JsonNode | null>(() => {
     <NSpin v-if="loading" size="small" />
     
     <!-- 渲染 Schema -->
-    <component v-else-if="finalSchema" :is="VSchemaComponent" :schema="finalSchema" />
+    <component v-else-if="finalSchema" :is="VSchemaComponent" :schema="finalSchema" :methods="schemaMethods" />
   </div>
 </template>
 

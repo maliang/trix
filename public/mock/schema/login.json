@@ -134,8 +134,9 @@
           },
           "children": [
             {
-              "com": "SystemLogo",
+              "com": "img",
               "props": {
+                "src": "/favicon.svg",
                 "style": { "width": "48px", "height": "48px" }
               }
             },
@@ -244,7 +245,7 @@
                     "style": { "height": "44px", "fontSize": "16px" }
                   },
                   "events": {
-                    "click": { "script": "await $methods.login(state.form.username, state.form.password);" }
+                    "click": { "script": "state.loading = true; try { await $methods.login(state.form.username, state.form.password); } finally { state.loading = false; }" }
                   },
                   "children": "登 录"
                 }

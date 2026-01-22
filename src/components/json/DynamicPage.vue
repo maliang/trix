@@ -2,19 +2,34 @@
 /**
  * 动态页面组件
  * 根据路由配置的 schemaSource 加载 JSON Schema 并使用 VSchema 渲染页面
+ * 当加载失败时，在页面内部直接显示对应的错误页面 Schema
+ * 
+ * 提供以下内置方法供 Schema 调用：
+ * - $nav.push(path) - 跳转页面（当前标签）
+ * - $nav.replace(path) - 替换当前页面
+ * - $nav.back() - 返回上一页
+ * - $tab.close(tabId?) - 关闭标签（默认当前标签）
+ * - $tab.open(path, title?) - 新建标签页
+ * - $tab.openIframe(url, title) - 新建 iframe 标签页
+ * - $tab.fix(tabId?) - 固定标签页
+ * - $window.open(url) - 打开新浏览器窗口
  */
-import { computed, resolveComponent, shallowRef, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { computed, resolveComponent, shallowRef, watch, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { NSpin, NResult, NButton, NSpace } from 'naive-ui';
 import type { JsonNode } from '@maliang47/vschema';
-import { useSchemaLoader } from '@/hooks';
+import { useSchemaLoader, useSchemaMethods } from '@/hooks';
 import { useAppStore } from '@/store/modules/app';
 import { useThemeStore } from '@/store/modules/theme';
 import { useAuthStore } from '@/store/modules/auth';
+import { jsonRendererConfig } from '@/config/json-renderer';
 const authStore = useAuthStore();
 
 // 使用 resolveComponent 获取全局注册的 VSchema 组件
 const VSchema = resolveComponent('VSchema');
+
+// 获取 Schema 内置方法
+const { schemaMethods } = useSchemaMethods();
 
 defineOptions({
   name: 'DynamicPage'
@@ -42,6 +57,7 @@ const emit = defineEmits<{
 
 // 路由和 Store
 const route = useRoute();
+const router = useRouter();
 const appStore = useAppStore();
 const themeStore = useThemeStore();
 
@@ -60,6 +76,7 @@ const {
   schema: loadedSchema,
   loading,
   error,
+  errorStatus,
   retryCount,
   maxRetries,
   retry
@@ -78,6 +95,103 @@ const {
     emit('error', err);
   }
 });
+
+/**
+ * HTTP 状态码到内置路由名称的映射
+ */
+const errorRouteNameMap: Record<number, string> = {
+  403: 'forbidden',
+  404: 'not-found',
+  500: 'server-error'
+};
+
+/**
+ * 从内置路由获取错误页面的 schemaSource
+ * 这样当后端更新内置路由配置后，会自动使用后端的地址
+ */
+function getErrorSchemaSource(status: number): string | null {
+  const routeName = errorRouteNameMap[status] || errorRouteNameMap[500];
+  if (!routeName) return null;
+  
+  // 从 router 中查找对应的内置路由
+  const routes = router.getRoutes();
+  const targetRoute = routes.find(r => r.name === routeName);
+  
+  if (targetRoute?.meta?.schemaSource) {
+    return targetRoute.meta.schemaSource as string;
+  }
+  
+  return null;
+}
+
+/**
+ * 错误页面 Schema
+ */
+const errorSchema = shallowRef<JsonNode | null>(null);
+const errorSchemaLoading = ref(false);
+
+/**
+ * 加载错误页面 Schema
+ */
+async function loadErrorSchema(status: number) {
+  // 从内置路由获取 schemaSource
+  const source = getErrorSchemaSource(status);
+  if (!source) {
+    errorSchema.value = null;
+    return;
+  }
+
+  errorSchemaLoading.value = true;
+  try {
+    const baseURL = jsonRendererConfig.baseURL || '';
+    // 判断是否为静态文件
+    const isStatic = source.endsWith('.json') || source.startsWith('/mock/');
+    const url = isStatic ? source : `${baseURL}${source}`;
+    
+    const response = await fetch(url);
+    if (response.ok) {
+      let schema = await response.json();
+      
+      // 如果是 API 响应，提取 data 字段
+      if (!isStatic && schema.code !== undefined && schema.data) {
+        schema = schema.data;
+      }
+      
+      // 注入错误信息到 schema
+      errorSchema.value = enrichSchema({
+        ...schema,
+        data: {
+          ...schema.data,
+          $error: {
+            status,
+            message: error.value
+          }
+        }
+      });
+    } else {
+      errorSchema.value = null;
+    }
+  } catch (e) {
+    // 加载错误 Schema 失败，使用默认显示
+    console.warn('[DynamicPage] 加载错误页面 Schema 失败:', e);
+    errorSchema.value = null;
+  } finally {
+    errorSchemaLoading.value = false;
+  }
+}
+
+// 监听错误状态，加载对应的错误页面 Schema
+watch(
+  [error, errorStatus],
+  ([err, status]) => {
+    if (err && status && status >= 400) {
+      loadErrorSchema(status);
+    } else {
+      errorSchema.value = null;
+    }
+  },
+  { immediate: true }
+);
 
 /**
  * 计算最终使用的 schema
@@ -148,25 +262,34 @@ function goBack() {
     </div>
 
     <!-- 错误状态 -->
-    <div v-else-if="error" class="error-container h-full flex items-center justify-center">
-      <NResult status="error" :title="error" :description="retryCount >= maxRetries ? '已达到最大重试次数' : ''">
-        <template #footer>
-          <NSpace>
-            <NButton @click="goBack">返回</NButton>
-            <NButton
-              v-if="retryCount < maxRetries"
-              type="primary"
-              @click="retry"
-            >
-              重试 ({{ retryCount }}/{{ maxRetries }})
-            </NButton>
-          </NSpace>
-        </template>
-      </NResult>
+    <div v-else-if="error" class="error-container h-full">
+      <!-- 加载错误页面 Schema 中 -->
+      <div v-if="errorSchemaLoading" class="h-full flex items-center justify-center">
+        <NSpin size="large" />
+      </div>
+      <!-- 使用自定义错误页面 Schema -->
+      <VSchema v-else-if="errorSchema" :schema="errorSchema" :methods="schemaMethods" />
+      <!-- 默认错误显示（当错误 Schema 加载失败时） -->
+      <div v-else class="h-full flex items-center justify-center">
+        <NResult status="error" :title="error" :description="retryCount >= maxRetries ? '已达到最大重试次数' : ''">
+          <template #footer>
+            <NSpace>
+              <NButton @click="goBack">返回</NButton>
+              <NButton
+                v-if="retryCount < maxRetries"
+                type="primary"
+                @click="retry"
+              >
+                重试 ({{ retryCount }}/{{ maxRetries }})
+              </NButton>
+            </NSpace>
+          </template>
+        </NResult>
+      </div>
     </div>
 
     <!-- 渲染 Schema -->
-    <VSchema v-else-if="finalSchema" :schema="finalSchema" />
+    <VSchema v-else-if="finalSchema" :schema="finalSchema" :methods="schemaMethods" />
 
     <!-- 无 Schema -->
     <div v-else class="empty-container h-full flex items-center justify-center">

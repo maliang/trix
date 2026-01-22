@@ -45,14 +45,10 @@ describe('Tab Store - 默认显示页面控制', () => {
    * Validates: Requirements 8.2
    */
   describe('Property 7: 默认显示页面控制', () => {
-    it('非多标签模式下，getDefaultPagesAfterLogin 应返回最后一个默认页面', () => {
+    it('getDefaultPageAfterLogin 应返回最后一个默认页面', () => {
       const tabStore = useTabStore();
-      const themeStore = useThemeStore();
 
-      // 设置为非多标签模式
-      themeStore.settings.tab.visible = false;
-
-      // 添加多个默认页面
+      // 添加多个默认页面（以最后一个为准）
       const routes = [
         { name: 'page1', path: '/page1', fullPath: '/page1', meta: { title: '页面1' } },
         { name: 'page2', path: '/page2', fullPath: '/page2', meta: { title: '页面2' } },
@@ -64,70 +60,52 @@ describe('Tab Store - 默认显示页面控制', () => {
       });
 
       // 获取默认页面
-      const defaultPages = tabStore.getDefaultPagesAfterLogin();
+      const defaultPage = tabStore.getDefaultPageAfterLogin();
 
-      // 非多标签模式下应只返回最后一个
-      expect(defaultPages.length).toBe(1);
-      expect(defaultPages[0].routePath).toBe('/page3');
+      // 应返回最后一个
+      expect(defaultPage).not.toBeNull();
+      expect(defaultPage?.routePath).toBe('/page3');
     });
 
-    it('多标签模式下，getDefaultPagesAfterLogin 应返回所有默认页面', () => {
+    it('固定标签页不能被关闭', () => {
       const tabStore = useTabStore();
-      const themeStore = useThemeStore();
 
-      // 设置为多标签模式
-      themeStore.settings.tab.visible = true;
-
-      // 添加多个默认页面
-      const routes = [
-        { name: 'page1', path: '/page1', fullPath: '/page1', meta: { title: '页面1' } },
-        { name: 'page2', path: '/page2', fullPath: '/page2', meta: { title: '页面2' } },
-        { name: 'page3', path: '/page3', fullPath: '/page3', meta: { title: '页面3' } }
-      ];
-
-      routes.forEach(route => {
-        tabStore.addDefaultTab(route as App.Global.TabRoute);
-      });
-
-      // 获取默认页面
-      const defaultPages = tabStore.getDefaultPagesAfterLogin();
-
-      // 多标签模式下应返回所有默认页面
-      expect(defaultPages.length).toBe(3);
-    });
-
-    it('多标签模式下，默认页面不能被关闭', () => {
-      const tabStore = useTabStore();
-      const themeStore = useThemeStore();
-
-      // 设置为多标签模式
-      themeStore.settings.tab.visible = true;
-
-      // 添加默认页面
-      const defaultRoute = { name: 'default', path: '/default', fullPath: '/default', meta: { title: '默认页面' } };
-      tabStore.addDefaultTab(defaultRoute as App.Global.TabRoute);
-      tabStore.addTab(defaultRoute as App.Global.TabRoute);
+      // 添加固定标签页
+      const fixedRoute = { 
+        name: 'fixed', 
+        path: '/fixed', 
+        fullPath: '/fixed', 
+        meta: { title: '固定页面', fixedIndexInTab: 0 } 
+      };
+      tabStore.addFixedTab(fixedRoute as App.Global.TabRoute);
 
       // 检查是否可以关闭
-      const canClose = !tabStore.isTabRetain('/default');
+      const canClose = !tabStore.isTabRetain('/fixed');
       expect(canClose).toBe(false);
     });
 
-    it('非多标签模式下，默认页面可以被关闭', () => {
+    it('固定标签页按 fixedIndexInTab 排序', () => {
       const tabStore = useTabStore();
-      const themeStore = useThemeStore();
 
-      // 设置为非多标签模式
-      themeStore.settings.tab.visible = false;
+      // 添加多个固定标签页（乱序）
+      const routes = [
+        { name: 'page2', path: '/page2', fullPath: '/page2', meta: { title: '页面2', fixedIndexInTab: 2 } },
+        { name: 'page0', path: '/page0', fullPath: '/page0', meta: { title: '页面0', fixedIndexInTab: 0 } },
+        { name: 'page1', path: '/page1', fullPath: '/page1', meta: { title: '页面1', fixedIndexInTab: 1 } }
+      ];
 
-      // 添加默认页面
-      const defaultRoute = { name: 'default', path: '/default', fullPath: '/default', meta: { title: '默认页面' } };
-      tabStore.addDefaultTab(defaultRoute as App.Global.TabRoute);
-      tabStore.addTab(defaultRoute as App.Global.TabRoute);
+      routes.forEach(route => {
+        tabStore.addFixedTab(route as App.Global.TabRoute);
+      });
 
-      // 非多标签模式下，默认页面可以被关闭（因为标签页不可见）
-      const canClose = !tabStore.isTabRetain('/default');
-      expect(canClose).toBe(true);
+      // 初始化固定标签页
+      tabStore.initDefaultTabsAfterLogin();
+
+      // 检查排序
+      const tabs = tabStore.tabs;
+      expect(tabs[0].routePath).toBe('/page0');
+      expect(tabs[1].routePath).toBe('/page1');
+      expect(tabs[2].routePath).toBe('/page2');
     });
 
     it('首页标签页永远不能被关闭', () => {
@@ -149,14 +127,10 @@ describe('Tab Store - 默认显示页面控制', () => {
    * Validates: Requirements 8.2
    */
   test.prop([fc.array(routeArbitrary, { minLength: 1, maxLength: 10 })])(
-    '对于任意数量的默认页面，非多标签模式下只返回最后一个',
+    '对于任意数量的默认页面，只保留最后一个',
     (routes) => {
       setActivePinia(createPinia());
       const tabStore = useTabStore();
-      const themeStore = useThemeStore();
-
-      // 设置为非多标签模式
-      themeStore.settings.tab.visible = false;
 
       // 添加所有路由作为默认页面
       routes.forEach(route => {
@@ -164,60 +138,36 @@ describe('Tab Store - 默认显示页面控制', () => {
       });
 
       // 获取默认页面
-      const defaultPages = tabStore.getDefaultPagesAfterLogin();
+      const defaultPage = tabStore.getDefaultPageAfterLogin();
 
-      // 非多标签模式下应只返回最后一个（或空数组如果没有默认页面）
+      // 应只保留最后一个
       if (routes.length > 0) {
-        expect(defaultPages.length).toBe(1);
+        expect(defaultPage).not.toBeNull();
+        expect(defaultPage?.fullPath).toBe(routes[routes.length - 1].fullPath);
       }
     }
   );
 
-  test.prop([fc.array(routeArbitrary, { minLength: 1, maxLength: 10 })])(
-    '对于任意数量的默认页面，多标签模式下返回所有页面',
+  test.prop([fc.array(routeArbitrary, { minLength: 1, maxLength: 5 })])(
+    '所有固定标签页都不能被关闭',
     (routes) => {
       setActivePinia(createPinia());
       const tabStore = useTabStore();
-      const themeStore = useThemeStore();
 
-      // 设置为多标签模式
-      themeStore.settings.tab.visible = true;
-
-      // 添加所有路由作为默认页面（去重）
+      // 添加所有路由作为固定标签页
       const uniqueRoutes = routes.filter((route, index, self) => 
         index === self.findIndex(r => r.fullPath === route.fullPath)
       );
 
-      uniqueRoutes.forEach(route => {
-        tabStore.addDefaultTab(route as App.Global.TabRoute);
+      uniqueRoutes.forEach((route, index) => {
+        tabStore.addFixedTab({
+          ...route,
+          meta: { ...route.meta, fixedIndexInTab: index }
+        } as App.Global.TabRoute);
       });
 
-      // 获取默认页面
-      const defaultPages = tabStore.getDefaultPagesAfterLogin();
-
-      // 多标签模式下应返回所有默认页面
-      expect(defaultPages.length).toBe(uniqueRoutes.length);
-    }
-  );
-
-  test.prop([fc.array(routeArbitrary, { minLength: 1, maxLength: 5 })])(
-    '多标签模式下，所有默认页面都不能被关闭',
-    (routes) => {
-      setActivePinia(createPinia());
-      const tabStore = useTabStore();
-      const themeStore = useThemeStore();
-
-      // 设置为多标签模式
-      themeStore.settings.tab.visible = true;
-
-      // 添加所有路由作为默认页面
-      routes.forEach(route => {
-        tabStore.addDefaultTab(route as App.Global.TabRoute);
-        tabStore.addTab(route as App.Global.TabRoute);
-      });
-
-      // 检查所有默认页面是否都不能关闭
-      const allRetained = routes.every(route => tabStore.isTabRetain(route.fullPath));
+      // 检查所有固定标签页是否都不能关闭
+      const allRetained = uniqueRoutes.every(route => tabStore.isTabRetain(route.fullPath));
       expect(allRetained).toBe(true);
     }
   );

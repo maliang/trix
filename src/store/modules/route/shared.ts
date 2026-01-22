@@ -131,23 +131,29 @@ function sortRouteByOrder(route: RouteRecordRaw) {
 /**
  * 从路由生成菜单
  * @param routes 路由列表
+ * @param parentPath 父路径（用于拼接完整路径）
  * @returns 菜单列表
  */
-export function getMenusByRoutes(routes: RouteRecordRaw[]): MenuItem[] {
+export function getMenusByRoutes(routes: RouteRecordRaw[], parentPath = ''): MenuItem[] {
   const menus: MenuItem[] = [];
 
   routes.forEach(route => {
     // 跳过 root 路由，直接处理其子路由
     if (route.name === 'root' && route.children) {
-      menus.push(...getMenusByRoutes(route.children));
+      menus.push(...getMenusByRoutes(route.children, parentPath));
       return;
     }
 
+    // 计算当前路由的完整路径
+    const currentPath = route.path.startsWith('/')
+      ? route.path
+      : `${parentPath}/${route.path}`.replace(/\/+/g, '/');
+
     if (!route.meta?.hideInMenu) {
-      const menu = getMenuByRoute(route);
+      const menu = getMenuByRoute(route, currentPath);
 
       if (route.children?.some(child => !child.meta?.hideInMenu)) {
-        menu.children = getMenusByRoutes(route.children);
+        menu.children = getMenusByRoutes(route.children, currentPath);
       }
 
       menus.push(menu);
@@ -160,9 +166,10 @@ export function getMenusByRoutes(routes: RouteRecordRaw[]): MenuItem[] {
 /**
  * 从单个路由生成菜单项
  * @param route 路由
+ * @param fullPath 完整路径
  * @returns 菜单项
  */
-function getMenuByRoute(route: RouteRecordRaw | RouteLocationNormalizedLoaded): MenuItem {
+function getMenuByRoute(route: RouteRecordRaw | RouteLocationNormalizedLoaded, fullPath?: string): MenuItem {
   const { SvgIconVNode } = useSvgIcon();
   
   const { name, path } = route;
@@ -173,7 +180,7 @@ function getMenuByRoute(route: RouteRecordRaw | RouteLocationNormalizedLoaded): 
     label: (title as string) || (name as string),
     i18nKey: i18nKey as string | undefined,
     routeKey: name as string,
-    routePath: path,
+    routePath: fullPath || path,
     icon: SvgIconVNode({ icon: icon as string, fontSize: 20 })
   };
 

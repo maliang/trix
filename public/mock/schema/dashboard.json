@@ -164,11 +164,11 @@
                   "slots": {
                     "prefix": [
                       {
-                        "com": "NText",
+                        "com": "SvgIcon",
                         "props": {
+                          "icon": "carbon:currency-dollar",
                           "class": "text-error text-2xl mr-2"
-                        },
-                        "children": "¥"
+                        }
                       }
                     ]
                   }
@@ -394,7 +394,7 @@
                         "secondary": true
                       },
                       "events": {
-                        "click": { "call": "$router.push", "args": ["/system/user"] }
+                        "click": { "call": "$methods.$nav.push", "args": ["/system/user"] }
                       },
                       "children": "用户管理"
                     },
@@ -405,7 +405,7 @@
                         "secondary": true
                       },
                       "events": {
-                        "click": { "call": "$router.push", "args": ["/system/role"] }
+                        "click": { "call": "$methods.$nav.push", "args": ["/system/role"] }
                       },
                       "children": "角色管理"
                     },
@@ -416,7 +416,7 @@
                         "secondary": true
                       },
                       "events": {
-                        "click": { "call": "$router.push", "args": ["/system/menu"] }
+                        "click": { "call": "$methods.$nav.push", "args": ["/system/menu"] }
                       },
                       "children": "菜单管理"
                     },
@@ -427,7 +427,7 @@
                         "secondary": true
                       },
                       "events": {
-                        "click": { "call": "$router.push", "args": ["/system/setting"] }
+                        "click": { "call": "$methods.$nav.push", "args": ["/system/setting"] }
                       },
                       "children": "系统设置"
                     }

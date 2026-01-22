@@ -2,6 +2,94 @@
 
 Trix Admin 提供的组合式函数（Composables）。
 
+## useSchemaMethods
+
+Schema 内置方法 Hook，提供可在 JSON Schema 中调用的导航、标签页、窗口等方法。
+
+### 导入
+
+```typescript
+import { useSchemaMethods } from '@/hooks'
+```
+
+### 用法
+
+```typescript
+const { $nav, $tab, $window, schemaMethods } = useSchemaMethods()
+
+// 在 DynamicPage 中使用
+<VSchema :schema="schema" :methods="schemaMethods" />
+```
+
+### 返回值
+
+#### $nav - 导航方法
+
+| 方法 | 参数 | 说明 |
+|------|------|------|
+| `push` | `path: string \| object` | 跳转到指定路径 |
+| `replace` | `path: string \| object` | 替换当前页面（不产生历史记录） |
+| `back` | `delta?: number` | 返回上一页，默认 1 步 |
+| `forward` | `delta?: number` | 前进，默认 1 步 |
+
+#### $tab - 标签页方法
+
+| 方法 | 参数 | 说明 |
+|------|------|------|
+| `close` | `tabId?: string` | 关闭标签页，默认关闭当前标签 |
+| `closeAndGo` | `path?: string` | 关闭当前标签并跳转到指定页面 |
+| `closeOthers` | `tabId?: string` | 关闭其他标签页 |
+| `closeLeft` | `tabId?: string` | 关闭左侧标签页 |
+| `closeRight` | `tabId?: string` | 关闭右侧标签页 |
+| `open` | `path: string, title?: string` | 新建标签页并跳转 |
+| `openIframe` | `url: string, title: string` | 新建 iframe 标签页 |
+| `refresh` | - | 刷新当前标签页 |
+| `fix` | `tabId?: string` | 固定标签页 |
+| `unfix` | `tabId?: string` | 取消固定标签页 |
+| `isFixed` | `tabId?: string` | 判断标签页是否固定 |
+
+#### $window - 窗口方法
+
+| 方法 | 参数 | 说明 |
+|------|------|------|
+| `open` | `url: string, target?: string, features?: string` | 在新窗口打开 URL |
+| `close` | - | 关闭当前窗口 |
+| `print` | - | 打印当前页面 |
+
+### 在 Schema 中使用
+
+通过 `$methods` 访问这些内置方法：
+
+```json
+{
+  "com": "NButton",
+  "events": {
+    "click": { "call": "$methods.$nav.push", "args": ["/user/profile"] }
+  },
+  "children": "跳转到个人资料"
+}
+```
+
+```json
+{
+  "com": "NButton",
+  "events": {
+    "click": { "call": "$methods.$tab.close" }
+  },
+  "children": "关闭当前标签"
+}
+```
+
+```json
+{
+  "com": "NButton",
+  "events": {
+    "click": { "call": "$methods.$window.open", "args": ["https://example.com"] }
+  },
+  "children": "打开新窗口"
+}
+```
+
 ## useSchemaLoader
 
 加载 JSON Schema 的 Hook。

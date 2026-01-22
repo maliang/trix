@@ -23,9 +23,17 @@ declare module 'vue-router' {
     schemaSource?: string;
 
     /**
+     * 固定标签页顺序
+     * 设置后该路由对应的标签页将固定显示在标签栏中，不能被关闭
+     * 数值越小越靠前
+     */
+    fixedIndexInTab?: number;
+
+    /**
      * 是否为登录后默认显示页面
-     * - 非多标签模式：最后一个设置此属性为 true 的页面作为登录后默认显示页
-     * - 多标签模式：所有设置此属性为 true 的页面默认显示且不能被关闭
+     * 设置后此页面将替代首页显示在标签栏第一位
+     * 如果是全屏页面（layoutType: 'blank'），则不在标签栏记录
+     * 如果有多个页面设置此属性为 true，以最后一个为准
      * @default false
      */
     isDefaultAfterLogin?: boolean;

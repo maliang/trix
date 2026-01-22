@@ -8,6 +8,7 @@ import { createVSchemaPlugin, type RequestConfig as RendererRequestConfig } from
 import * as NaiveUI from 'naive-ui';
 import { jsonRendererConfig } from '@/config/json-renderer';
 import { localStg } from '@/utils/storage';
+import { useRouter } from 'vue-router';
 
 // 自定义组件导入
 import SvgIcon from '@/components/custom/svg-icon.vue';

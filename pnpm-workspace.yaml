@@ -7,3 +7,6 @@ ignoredBuiltDependencies:
   - esbuild
   - unrs-resolver
   - vue-demi
+
+overrides:
+  '@maliang47/vschema': link:../vschema

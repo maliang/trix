@@ -388,3 +388,145 @@
   }
 }
 ```
+
+## 内置方法
+
+Trix Admin 提供了一组内置方法，可通过 `$methods` 在 Schema 中调用。
+
+### $nav - 导航方法
+
+页面跳转相关操作：
+
+```json
+// 跳转到指定路径
+{ "call": "$methods.$nav.push", "args": ["/user/profile"] }
+
+// 带参数跳转
+{ "call": "$methods.$nav.push", "args": [{ "path": "/user", "query": { "id": "{{ userId }}" } }] }
+
+// 替换当前页面（不产生历史记录）
+{ "call": "$methods.$nav.replace", "args": ["/login"] }
+
+// 返回上一页
+{ "call": "$methods.$nav.back" }
+
+// 返回多步
+{ "call": "$methods.$nav.back", "args": [2] }
+
+// 前进
+{ "call": "$methods.$nav.forward" }
+```
+
+### $tab - 标签页方法
+
+多标签页管理：
+
+```json
+// 关闭当前标签页
+{ "call": "$methods.$tab.close" }
+
+// 关闭指定标签页
+{ "call": "$methods.$tab.close", "args": ["/user/list"] }
+
+// 关闭当前标签并跳转到首页
+{ "call": "$methods.$tab.closeAndGo", "args": ["/home"] }
+
+// 关闭其他标签页
+{ "call": "$methods.$tab.closeOthers" }
+
+// 关闭左侧标签页
+{ "call": "$methods.$tab.closeLeft" }
+
+// 关闭右侧标签页
+{ "call": "$methods.$tab.closeRight" }
+
+// 新建标签页并跳转
+{ "call": "$methods.$tab.open", "args": ["/user/detail/{{ id }}"] }
+
+// 新建标签页并指定标题
+{ "call": "$methods.$tab.open", "args": ["/user/detail/{{ id }}", "用户详情"] }
+
+// 新建 iframe 标签页
+{ "call": "$methods.$tab.openIframe", "args": ["https://example.com", "外部页面"] }
+
+// 刷新当前标签页
+{ "call": "$methods.$tab.refresh" }
+
+// 固定标签页
+{ "call": "$methods.$tab.fix" }
+
+// 取消固定
+{ "call": "$methods.$tab.unfix" }
+```
+
+### $window - 窗口方法
+
+浏览器窗口操作：
+
+```json
+// 在新窗口打开 URL
+{ "call": "$methods.$window.open", "args": ["https://example.com"] }
+
+// 指定窗口名称
+{ "call": "$methods.$window.open", "args": ["https://example.com", "_blank"] }
+
+// 关闭当前窗口
+{ "call": "$methods.$window.close" }
+
+// 打印当前页面
+{ "call": "$methods.$window.print" }
+```
+
+### 实际应用示例
+
+#### 表单提交后关闭标签
+
+```json
+{
+  "methods": {
+    "handleSubmit": [
+      { "set": "loading", "value": true },
+      {
+        "fetch": "/api/user",
+        "method": "POST",
+        "body": "{{ form }}",
+        "then": [
+          { "call": "$message.success", "args": ["保存成功"] },
+          { "call": "$methods.$tab.closeAndGo", "args": ["/user/list"] }
+        ],
+        "catch": [
+          { "call": "$message.error", "args": ["保存失败"] }
+        ],
+        "finally": [
+          { "set": "loading", "value": false }
+        ]
+      }
+    ]
+  }
+}
+```
+
+#### 快捷操作按钮
+
+```json
+{
+  "com": "NSpace",
+  "children": [
+    {
+      "com": "NButton",
+      "props": { "type": "primary" },
+      "events": {
+        "click": { "call": "$methods.$nav.push", "args": ["/system/user"] }
+      },
+      "children": "用户管理"
+    },
+    {
+      "com": "NButton",
+      "events": {
+        "click": { "call": "$methods.$window.open", "args": ["https://docs.example.com"] }
+      },
+      "children": "查看文档"
+    }
+  ]
+}
+```

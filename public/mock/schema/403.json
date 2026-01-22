@@ -29,16 +29,16 @@
                   "type": "primary"
                 },
                 "events": {
-                  "click": { "call": "$router.push", "args": ["/"] }
+                  "click": { "script": "$methods.$tab.closeAndGo('/')" }
                 },
                 "children": "返回首页"
               },
               {
                 "com": "NButton",
                 "events": {
-                  "click": { "call": "$router.back" }
+                  "click": { "script": "$methods.$tab.refresh()" }
                 },
-                "children": "返回上一页"
+                "children": "重试"
               }
             ]
           }

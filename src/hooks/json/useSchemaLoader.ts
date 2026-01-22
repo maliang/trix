@@ -38,6 +38,8 @@ export interface UseSchemaLoaderReturn {
   schema: Ref<JsonNode | null>;
   loading: Ref<boolean>;
   error: Ref<string | null>;
+  /** HTTP 错误状态码 */
+  errorStatus: Ref<number | null>;
   retryCount: Ref<number>;
   maxRetries: number;
   load: () => Promise<void>;
@@ -49,6 +51,7 @@ export function useSchemaLoader(options: UseSchemaLoaderOptions): UseSchemaLoade
   const schema = ref<JsonNode | null>(null);
   const loading = ref(Boolean(options.initialLoading));
   const error = ref<string | null>(null);
+  const errorStatus = ref<number | null>(null);
   const retryCount = ref(0);
   const maxRetries = options.maxRetries ?? 3;
 
@@ -66,11 +69,13 @@ export function useSchemaLoader(options: UseSchemaLoaderOptions): UseSchemaLoade
       }
       schema.value = null;
       loading.value = false;
+      errorStatus.value = null;
       return;
     }
 
     loading.value = true;
     error.value = null;
+    errorStatus.value = null;
     options.onLoading?.();
 
     try {
@@ -88,6 +93,8 @@ export function useSchemaLoader(options: UseSchemaLoaderOptions): UseSchemaLoade
       if (currentId !== requestId) return;
 
       error.value = err.message;
+      // 提取 HTTP 状态码
+      errorStatus.value = (err as any).status || null;
       schema.value = null;
       options.onError?.(err);
     } finally {
@@ -107,6 +114,7 @@ export function useSchemaLoader(options: UseSchemaLoaderOptions): UseSchemaLoade
     schema.value = null;
     loading.value = false;
     error.value = null;
+    errorStatus.value = null;
     retryCount.value = 0;
   }
 
@@ -127,6 +135,7 @@ export function useSchemaLoader(options: UseSchemaLoaderOptions): UseSchemaLoade
     schema,
     loading,
     error,
+    errorStatus,
     retryCount,
     maxRetries,
     load,
