@@ -24,17 +24,39 @@ export const useTabStore = defineStore('tab', () => {
   const homeTab = ref<App.Global.Tab | null>(null);
 
   /** 默认显示的标签页（isDefaultAfterLogin: true 的页面） */
-  const defaultTabs = ref<App.Global.Tab[]>([]);
+  const defaultTab = ref<App.Global.Tab | null>(null);
+
+  /** 固定标签页列表（fixedIndexInTab 设置的页面） */
+  const fixedTabs = ref<App.Global.Tab[]>([]);
 
   /** 当前激活的标签页 ID */
   const activeTabId = ref<string>('');
 
-  /** 所有标签页（包含首页） */
+  /** 所有标签页（包含首页/默认页和固定标签页） */
   const allTabs = computed(() => {
-    if (homeTab.value) {
-      return [homeTab.value, ...tabs.value.filter(tab => tab.id !== homeTab.value?.id)];
+    // 按 fixedIndex 排序的固定标签页
+    const sortedFixedTabs = [...fixedTabs.value].sort((a, b) => 
+      (a.fixedIndex ?? 0) - (b.fixedIndex ?? 0)
+    );
+    
+    // 确定首位标签页：defaultTab 替代 homeTab
+    const firstTab = defaultTab.value || homeTab.value;
+    
+    // 过滤掉已在固定标签页中的普通标签页
+    const fixedIds = new Set(sortedFixedTabs.map(t => t.id));
+    const normalTabs = tabs.value.filter(tab => !fixedIds.has(tab.id));
+    
+    // 首位标签页 + 固定标签页 + 普通标签页
+    const result: App.Global.Tab[] = [];
+    
+    if (firstTab) {
+      result.push(firstTab);
     }
-    return tabs.value;
+    
+    result.push(...sortedFixedTabs.filter(t => t.id !== firstTab?.id));
+    result.push(...normalTabs.filter(t => t.id !== firstTab?.id));
+    
+    return result;
   });
 
   /**
@@ -56,8 +78,7 @@ export const useTabStore = defineStore('tab', () => {
       routeKey: route.name,
       routePath: route.path,
       fullPath: route.fullPath,
-      icon: route.meta.icon,
-      localIcon: route.meta.localIcon
+      icon: route.meta.icon
     };
   }
 
@@ -72,6 +93,7 @@ export const useTabStore = defineStore('tab', () => {
   /**
    * 添加默认显示的标签页
    * 用于处理 isDefaultAfterLogin: true 的页面
+   * 如果有多个，以最后一个为准
    * @param route 路由信息
    */
   function addDefaultTab(route: App.Global.TabRoute) {
@@ -81,14 +103,39 @@ export const useTabStore = defineStore('tab', () => {
       routeKey: route.name,
       routePath: route.path,
       fullPath: route.fullPath,
+      icon: route.meta.icon
+    };
+
+    // 以最后一个为准，直接覆盖
+    defaultTab.value = tab;
+  }
+
+  /**
+   * 添加固定标签页
+   * 用于处理 fixedIndexInTab 设置的页面
+   * @param route 路由信息
+   */
+  function addFixedTab(route: App.Global.TabRoute) {
+    const fixedIndex = route.meta.fixedIndexInTab;
+    if (fixedIndex === undefined) return;
+
+    const tab: App.Global.Tab = {
+      id: route.fullPath,
+      label: route.meta.title || '',
+      routeKey: route.name,
+      routePath: route.path,
+      fullPath: route.fullPath,
       icon: route.meta.icon,
-      localIcon: route.meta.localIcon
+      fixedIndex
     };
 
     // 检查是否已存在
-    const exists = defaultTabs.value.some(t => t.id === tab.id);
-    if (!exists) {
-      defaultTabs.value.push(tab);
+    const existIndex = fixedTabs.value.findIndex(t => t.id === tab.id);
+    if (existIndex !== -1) {
+      // 更新已存在的固定标签页
+      fixedTabs.value[existIndex] = tab;
+    } else {
+      fixedTabs.value.push(tab);
     }
   }
 
@@ -116,8 +163,7 @@ export const useTabStore = defineStore('tab', () => {
       routeKey: route.name,
       routePath: route.path,
       fullPath: route.fullPath,
-      icon: route.meta.icon,
-      localIcon: route.meta.localIcon
+      icon: route.meta.icon
     };
 
     // 检查是否为首页
@@ -168,9 +214,11 @@ export const useTabStore = defineStore('tab', () => {
    * @param excludes 排除的标签页 ID 列表
    */
   function clearTabs(excludes: string[] = []) {
+    // 默认页面、首页、固定标签页不能被清除
     const retainIds = [
+      defaultTab.value?.id,
       homeTab.value?.id,
-      ...defaultTabs.value.map(t => t.id),
+      ...fixedTabs.value.map(t => t.id),
       ...excludes
     ].filter(Boolean) as string[];
 
@@ -228,17 +276,22 @@ export const useTabStore = defineStore('tab', () => {
    * @param tabId 标签页 ID
    */
   function isTabRetain(tabId: string): boolean {
-    // 首页不能关闭
-    if (homeTab.value && tabId === homeTab.value.id) {
+    // 默认页面（替代首页）不能关闭
+    if (defaultTab.value && tabId === defaultTab.value.id) {
       return true;
     }
 
-    // 默认显示的标签页不能关闭（在多标签模式下）
-    if (getThemeStore().tab.visible && defaultTabs.value.some(t => t.id === tabId)) {
+    // 首页不能关闭（当没有 defaultTab 时）
+    if (!defaultTab.value && homeTab.value && tabId === homeTab.value.id) {
       return true;
     }
 
-    // 固定的标签页不能关闭
+    // 固定标签页不能关闭
+    if (fixedTabs.value.some(t => t.id === tabId)) {
+      return true;
+    }
+
+    // 手动固定的标签页不能关闭
     const tab = tabs.value.find(t => t.id === tabId);
     if (tab && tab.fixedIndex !== undefined) {
       return true;
@@ -333,18 +386,10 @@ export const useTabStore = defineStore('tab', () => {
 
   /**
    * 获取登录后的默认显示页面
-   * 非多标签模式：返回最后一个设置 isDefaultAfterLogin 的页面
-   * 多标签模式：返回所有设置 isDefaultAfterLogin 的页面
+   * 返回最后一个设置 isDefaultAfterLogin 的页面
    */
-  function getDefaultPagesAfterLogin(): App.Global.Tab[] {
-    if (getThemeStore().tab.visible) {
-      // 多标签模式：返回所有默认页面
-      return defaultTabs.value;
-    } else {
-      // 非多标签模式：返回最后一个默认页面
-      const lastDefault = defaultTabs.value[defaultTabs.value.length - 1];
-      return lastDefault ? [lastDefault] : [];
-    }
+  function getDefaultPageAfterLogin(): App.Global.Tab | null {
+    return defaultTab.value;
   }
 
   /**
@@ -352,16 +397,12 @@ export const useTabStore = defineStore('tab', () => {
    * 在登录成功后调用
    */
   function initDefaultTabsAfterLogin() {
-    const defaultPages = getDefaultPagesAfterLogin();
-    
-    if (getThemeStore().tab.visible) {
-      // 多标签模式：添加所有默认页面到标签页
-      defaultPages.forEach(tab => {
-        if (!tabs.value.some(t => t.id === tab.id)) {
-          tabs.value.push(tab);
-        }
-      });
-    }
+    // 添加所有固定标签页
+    fixedTabs.value.forEach(tab => {
+      if (!tabs.value.some(t => t.id === tab.id)) {
+        tabs.value.push(tab);
+      }
+    });
   }
 
   // 页面关闭或刷新时缓存标签页
@@ -377,12 +418,14 @@ export const useTabStore = defineStore('tab', () => {
   return {
     tabs: allTabs,
     homeTab,
-    defaultTabs,
+    defaultTab,
+    fixedTabs,
     activeTabId,
     setActiveTabId,
     initHomeTab,
     clearHomeTab,
     addDefaultTab,
+    addFixedTab,
     initTabStore,
     addTab,
     removeTab,
@@ -397,7 +440,7 @@ export const useTabStore = defineStore('tab', () => {
     cacheTabs,
     restoreTabs,
     clearCachedTabs,
-    getDefaultPagesAfterLogin,
+    getDefaultPageAfterLogin,
     initDefaultTabsAfterLogin
   };
 });

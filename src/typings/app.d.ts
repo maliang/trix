@@ -67,8 +67,6 @@ declare namespace App {
       fixedIndex?: number;
       /** 图标 */
       icon?: string;
-      /** 本地图标 */
-      localIcon?: string;
     }
 
     /** 标签页路由 */
@@ -80,7 +78,7 @@ declare namespace App {
         title?: string;
         i18nKey?: string;
         icon?: string;
-        localIcon?: string;
+        fixedIndexInTab?: number;
       };
     }
 

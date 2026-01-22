@@ -326,40 +326,85 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
   }
 
   /**
-   * 初始化默认标签页
-   * - 无 isDefaultAfterLogin：初始化首页标签
-   * - 有 isDefaultAfterLogin：只初始化这些页面的标签（首页不显示）
+   * 初始化默认标签页和固定标签页
+   * - fixedIndexInTab：添加到固定标签页列表
+   * - isDefaultAfterLogin：设置登录后默认显示页面（以最后一个为准）
+   *   - 如果是全屏页面（layoutType: 'blank'），则不在标签栏记录
    * @param routes 所有路由
    * @param defaultRoutes isDefaultAfterLogin 的路由列表
    */
   function initDefaultTabs(routes: RouteRecordRaw[], defaultRoutes: Array<{ route: RouteRecordRaw; fullPath: string }>) {
     const tabStore = getTabStore();
     
+    // 收集所有设置了 fixedIndexInTab 的路由
+    collectFixedTabs(routes);
+    
     if (defaultRoutes.length === 0) {
       // 无 isDefaultAfterLogin：初始化首页标签
       initHomeTabFromRoutes(routes);
     } else {
-      // 有 isDefaultAfterLogin：只初始化这些页面的标签
-      // 清除 homeTab（首页不显示在标签栏）
-      tabStore.clearHomeTab();
+      // 有 isDefaultAfterLogin：设置登录后默认显示页面（以最后一个为准）
+      const lastDefault = defaultRoutes[defaultRoutes.length - 1];
+      const isBlankLayout = lastDefault.route.meta?.layoutType === 'blank';
       
-      // 添加所有 isDefaultAfterLogin 的页面到默认标签
-      defaultRoutes.forEach(({ route, fullPath }) => {
+      if (isBlankLayout) {
+        // 全屏页面不在标签栏记录，保留首页标签
+        initHomeTabFromRoutes(routes);
+      } else {
+        // 非全屏页面，替代首页显示在标签栏
+        // 清除 homeTab（首页不显示在标签栏）
+        tabStore.clearHomeTab();
+        
         tabStore.addDefaultTab({
-          name: route.name as string,
-          path: route.path,
-          fullPath,
+          name: lastDefault.route.name as string,
+          path: lastDefault.route.path,
+          fullPath: lastDefault.fullPath,
           meta: {
-            title: (route.meta?.title as string) || '',
-            icon: route.meta?.icon as string,
-            localIcon: route.meta?.localIcon as string
+            title: (lastDefault.route.meta?.title as string) || '',
+            icon: lastDefault.route.meta?.icon as string
           }
         });
-      });
+      }
       
-      // 初始化默认标签页（添加到标签栏）
+      // 初始化固定标签页（添加到标签栏）
       tabStore.initDefaultTabsAfterLogin();
     }
+  }
+
+  /**
+   * 收集所有设置了 fixedIndexInTab 的路由并添加到固定标签页
+   * @param routes 路由列表
+   * @param parentPath 父路径
+   */
+  function collectFixedTabs(routes: RouteRecordRaw[], parentPath = '') {
+    const tabStore = getTabStore();
+    
+    function traverse(items: RouteRecordRaw[], basePath: string) {
+      for (const route of items) {
+        const fullPath = basePath + (route.path.startsWith('/') ? route.path : `/${route.path}`);
+        
+        // 检查是否设置了 fixedIndexInTab
+        if (route.meta?.fixedIndexInTab !== undefined) {
+          tabStore.addFixedTab({
+            name: route.name as string,
+            path: route.path,
+            fullPath: fullPath.replace(/\/+/g, '/'),
+            meta: {
+              title: (route.meta?.title as string) || '',
+              icon: route.meta?.icon as string,
+              fixedIndexInTab: route.meta.fixedIndexInTab as number
+            }
+          });
+        }
+        
+        // 递归处理子路由
+        if (route.children?.length) {
+          traverse(route.children, fullPath);
+        }
+      }
+    }
+    
+    traverse(routes, parentPath);
   }
 
   /**
@@ -395,8 +440,7 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
         fullPath: homePath,
         meta: {
           title: (homeRoute.meta?.title as string) || '首页',
-          icon: homeRoute.meta?.icon as string,
-          localIcon: homeRoute.meta?.localIcon as string
+          icon: homeRoute.meta?.icon as string
         }
       });
     }

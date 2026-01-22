@@ -22,10 +22,11 @@ const props = defineProps<Props>();
 
 const router = useRouter();
 
+/** 使用 iconify 图标替代本地 svg */
 const iconMap: Record<ExceptionType, string> = {
-  '403': 'no-permission',
-  '404': 'not-found',
-  '500': 'service-error'
+  '403': 'flat-color-icons:lock',
+  '404': 'flat-color-icons:search',
+  '500': 'flat-color-icons:high-priority'
 };
 
 const icon = computed(() => iconMap[props.type]);
@@ -38,7 +39,7 @@ function goHome() {
 <template>
   <div class="size-full min-h-520px flex-col-center gap-24px overflow-hidden">
     <div class="flex text-400px text-primary">
-      <SvgIcon :local-icon="icon" />
+      <SvgIcon :icon="icon" />
     </div>
     <NButton type="primary" @click="goHome">{{ $t('common.backToHome') }}</NButton>
   </div>

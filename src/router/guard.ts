@@ -105,8 +105,7 @@ function collectDefaultAfterLoginRoute(to: RouteLocationNormalized) {
         fullPath: to.fullPath,
         meta: {
           title: to.meta.title as string,
-          icon: to.meta.icon as string,
-          localIcon: to.meta.localIcon as string
+          icon: to.meta.icon as string
         }
       });
     } catch (e) {

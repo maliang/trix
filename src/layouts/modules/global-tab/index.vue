@@ -142,8 +142,7 @@ function init() {
     fullPath: route.fullPath,
     meta: {
       title: route.meta.title as string,
-      icon: route.meta.icon as string,
-      localIcon: route.meta.localIcon as string
+      icon: route.meta.icon as string
     }
   });
 }
@@ -158,8 +157,7 @@ watch(
       fullPath: route.fullPath,
       meta: {
         title: route.meta.title as string,
-        icon: route.meta.icon as string,
-        localIcon: route.meta.localIcon as string
+        icon: route.meta.icon as string
       }
     });
     scrollToActiveTab();
@@ -227,7 +225,7 @@ init();
         @close="handleCloseTab(tab)"
       >
         <template #prefix>
-          <SvgIcon :icon="tab.icon" :local-icon="tab.localIcon" class="inline-block align-text-bottom text-16px" />
+          <SvgIcon :icon="tab.icon" class="inline-block align-text-bottom text-16px" />
         </template>
         <div class="max-w-240px ellipsis-text">{{ tab.label }}</div>
       </PageTab>

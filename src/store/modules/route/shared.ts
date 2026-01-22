@@ -166,7 +166,7 @@ function getMenuByRoute(route: RouteRecordRaw | RouteLocationNormalizedLoaded): 
   const { SvgIconVNode } = useSvgIcon();
   
   const { name, path } = route;
-  const { title, i18nKey, icon, localIcon } = route.meta ?? {};
+  const { title, i18nKey, icon } = route.meta ?? {};
 
   const menu: MenuItem = {
     key: name as string,
@@ -174,7 +174,7 @@ function getMenuByRoute(route: RouteRecordRaw | RouteLocationNormalizedLoaded): 
     i18nKey: i18nKey as string | undefined,
     routeKey: name as string,
     routePath: path,
-    icon: SvgIconVNode({ icon: icon as string, localIcon: localIcon as string, fontSize: 20 })
+    icon: SvgIconVNode({ icon: icon as string, fontSize: 20 })
   };
 
   return menu;

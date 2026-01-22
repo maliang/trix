@@ -6,14 +6,12 @@ defineOptions({ name: 'IconTooltip' });
 
 interface Props {
   icon?: string;
-  localIcon?: string;
   desc?: string;
   placement?: PopoverPlacement;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   icon: 'mdi-help-circle',
-  localIcon: '',
   desc: '',
   placement: 'top'
 });
@@ -21,8 +19,8 @@ const props = withDefaults(defineProps<Props>(), {
 const slots = useSlots();
 const hasCustomTrigger = computed(() => Boolean(slots.trigger));
 
-if (!hasCustomTrigger.value && !props.icon && !props.localIcon) {
-  throw new Error('当没有提供自定义 trigger 插槽时，icon 或 localIcon 是必需的');
+if (!hasCustomTrigger.value && !props.icon) {
+  throw new Error('当没有提供自定义 trigger 插槽时，icon 是必需的');
 }
 </script>
 
@@ -31,7 +29,7 @@ if (!hasCustomTrigger.value && !props.icon && !props.localIcon) {
     <template #trigger>
       <slot name="trigger">
         <div class="cursor-pointer">
-          <SvgIcon :icon="icon" :local-icon="localIcon" />
+          <SvgIcon :icon="icon" />
         </div>
       </slot>
     </template>
