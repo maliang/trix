@@ -1,5 +1,5 @@
 import { ref, toValue, watch, type MaybeRefOrGetter, type Ref } from 'vue';
-import type { JsonNode } from '@maliang47/vschema';
+import type { JsonNode } from 'vschema-ui';
 import { fetchSchema } from '@/service/api';
 
 export interface UseSchemaLoaderOptions {

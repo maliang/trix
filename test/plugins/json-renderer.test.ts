@@ -127,7 +127,6 @@ describe('JSON 渲染器插件 - 组件注册', () => {
         'ReloadButton',
         'SystemLogo',
         'ThemeSchemaSwitch',
-        'TableHeaderOperation',
         'TableColumnSetting'
       ];
 

@@ -4,25 +4,31 @@
  * 根据路由配置的 schemaSource 加载 JSON Schema 并使用 VSchema 渲染页面
  * 当加载失败时，在页面内部直接显示对应的错误页面 Schema
  * 
- * 提供以下内置方法供 Schema 调用：
- * - $nav.push(path) - 跳转页面（当前标签）
- * - $nav.replace(path) - 替换当前页面
- * - $nav.back() - 返回上一页
- * - $tab.close(tabId?) - 关闭标签（默认当前标签）
- * - $tab.open(path, title?) - 新建标签页
- * - $tab.openIframe(url, title) - 新建 iframe 标签页
- * - $tab.fix(tabId?) - 固定标签页
- * - $window.open(url) - 打开新浏览器窗口
+ * 提供以下内置方法供 Schema 调用（需要加 $methods. 前缀）：
+ * - $methods.$nav.push(path) - 跳转页面（当前标签）
+ * - $methods.$nav.replace(path) - 替换当前页面
+ * - $methods.$nav.back() - 返回上一页
+ * - $methods.$tab.close(tabId?) - 关闭标签（默认当前标签）
+ * - $methods.$tab.open(path, title?) - 新建标签页
+ * - $methods.$tab.openIframe(url, title) - 新建 iframe 标签页
+ * - $methods.$tab.fix(tabId?) - 固定标签页
+ * - $methods.$window.open(url) - 打开新浏览器窗口
+ * - $methods.$message.success(content) - 成功消息
+ * - $methods.$message.error(content) - 错误消息
+ * - $methods.$dialog.warning(options) - 警告对话框
+ * - $methods.$notification.success(options) - 成功通知
+ * - $methods.$loadingBar.start() - 开始加载条
  */
 import { computed, resolveComponent, shallowRef, watch, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { NSpin, NResult, NButton, NSpace } from 'naive-ui';
-import type { JsonNode } from '@maliang47/vschema';
+import type { JsonNode } from 'vschema-ui';
 import { useSchemaLoader, useSchemaMethods } from '@/hooks';
 import { useAppStore } from '@/store/modules/app';
 import { useThemeStore } from '@/store/modules/theme';
 import { useAuthStore } from '@/store/modules/auth';
 import { jsonRendererConfig } from '@/config/json-renderer';
+import { getBaseUrl } from '@/store/modules/theme/shared';
 const authStore = useAuthStore();
 
 // 使用 resolveComponent 获取全局注册的 VSchema 组件
@@ -146,7 +152,8 @@ async function loadErrorSchema(status: number) {
     const baseURL = jsonRendererConfig.baseURL || '';
     // 判断是否为静态文件
     const isStatic = source.endsWith('.json') || source.startsWith('/mock/');
-    const url = isStatic ? source : `${baseURL}${source}`;
+    // 静态文件需要添加 VITE_BASE_URL 前缀
+    const url = isStatic ? getBaseUrl(source) : `${baseURL}${source}`;
     
     const response = await fetch(url);
     if (response.ok) {
@@ -251,7 +258,7 @@ function goBack() {
 </script>
 
 <template>
-  <div class="dynamic-page h-full">
+  <div class="dynamic-page h-full flex flex-col">
     <!-- 加载状态 -->
     <div v-if="loading" class="loading-container h-full flex items-center justify-center">
       <NSpin size="large">
@@ -268,7 +275,7 @@ function goBack() {
         <NSpin size="large" />
       </div>
       <!-- 使用自定义错误页面 Schema -->
-      <VSchema v-else-if="errorSchema" :schema="errorSchema" :methods="schemaMethods" />
+      <VSchema v-else-if="errorSchema" :schema="errorSchema" :methods="schemaMethods" class="flex-1-hidden" />
       <!-- 默认错误显示（当错误 Schema 加载失败时） -->
       <div v-else class="h-full flex items-center justify-center">
         <NResult status="error" :title="error" :description="retryCount >= maxRetries ? '已达到最大重试次数' : ''">
@@ -289,7 +296,7 @@ function goBack() {
     </div>
 
     <!-- 渲染 Schema -->
-    <VSchema v-else-if="finalSchema" :schema="finalSchema" :methods="schemaMethods" />
+    <VSchema v-else-if="finalSchema" :schema="finalSchema" :methods="schemaMethods" class="flex-1-hidden" />
 
     <!-- 无 Schema -->
     <div v-else class="empty-container h-full flex items-center justify-center">

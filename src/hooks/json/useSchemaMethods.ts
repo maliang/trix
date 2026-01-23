@@ -2,14 +2,19 @@
  * Schema 内置方法 Composable
  * 提供可在 VSchema 中调用的导航、标签页、窗口等方法
  * 
- * 使用方式：
- * - $nav.push(path) - 跳转页面
- * - $nav.replace(path) - 替换页面
- * - $nav.back() - 返回上一页
- * - $tab.close() - 关闭标签
- * - $tab.open(path, title?) - 新建标签页
- * - $tab.fix() - 固定标签页
- * - $window.open(url) - 打开新窗口
+ * 使用方式（需要加 $methods. 前缀）：
+ * - $methods.$nav.push(path) - 跳转页面
+ * - $methods.$nav.replace(path) - 替换页面
+ * - $methods.$nav.back() - 返回上一页
+ * - $methods.$tab.close() - 关闭标签
+ * - $methods.$tab.open(path, title?) - 新建标签页
+ * - $methods.$tab.fix() - 固定标签页
+ * - $methods.$window.open(url) - 打开新窗口
+ * - $methods.$message.success(content) - 成功消息
+ * - $methods.$message.error(content) - 错误消息
+ * - $methods.$dialog.warning(options) - 警告对话框
+ * - $methods.$notification.success(options) - 成功通知
+ * - $methods.$loadingBar.start() - 开始加载条
  */
 
 import { useRoute, useRouter } from 'vue-router';
@@ -222,19 +227,65 @@ export function useSchemaMethods() {
   };
 
   /**
+   * NaiveUI 全局 API 包装器
+   * 从 window 对象获取，由 app-provider.vue 注入
+   * 使用包装函数避免直接暴露组件实例，防止 Vue 警告
+   */
+  const $message = {
+    success: (content: string, options?: any) => window.$message?.success(content, options),
+    error: (content: string, options?: any) => window.$message?.error(content, options),
+    warning: (content: string, options?: any) => window.$message?.warning(content, options),
+    info: (content: string, options?: any) => window.$message?.info(content, options),
+    loading: (content: string, options?: any) => window.$message?.loading(content, options),
+    destroyAll: () => window.$message?.destroyAll()
+  };
+
+  const $dialog = {
+    success: (options: any) => window.$dialog?.success(options),
+    error: (options: any) => window.$dialog?.error(options),
+    warning: (options: any) => window.$dialog?.warning(options),
+    info: (options: any) => window.$dialog?.info(options),
+    create: (options: any) => window.$dialog?.create(options),
+    destroyAll: () => window.$dialog?.destroyAll()
+  };
+
+  const $notification = {
+    success: (options: any) => window.$notification?.success(options),
+    error: (options: any) => window.$notification?.error(options),
+    warning: (options: any) => window.$notification?.warning(options),
+    info: (options: any) => window.$notification?.info(options),
+    create: (options: any) => window.$notification?.create(options),
+    destroyAll: () => window.$notification?.destroyAll()
+  };
+
+  const $loadingBar = {
+    start: () => window.$loadingBar?.start(),
+    finish: () => window.$loadingBar?.finish(),
+    error: () => window.$loadingBar?.error()
+  };
+
+  /**
    * 返回所有方法集合
    * 在 Schema 中可通过 $methods.$nav.push() 等方式调用
    */
   const schemaMethods = {
     $nav,
     $tab,
-    $window
+    $window,
+    $message,
+    $dialog,
+    $notification,
+    $loadingBar
   };
 
   return {
     $nav,
     $tab,
     $window,
+    $message,
+    $dialog,
+    $notification,
+    $loadingBar,
     schemaMethods
   };
 }

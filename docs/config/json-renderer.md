@@ -174,7 +174,7 @@ tokenPrefix: 'Bearer '
 在 `src/plugins/json-renderer.ts` 中初始化：
 
 ```typescript
-import { createVSchemaPlugin } from '@maliang47/vschema'
+import { createVSchemaPlugin } from 'vschema-ui'
 
 export function setupJsonRenderer(app: App): void {
   const plugin = createVSchemaPlugin({

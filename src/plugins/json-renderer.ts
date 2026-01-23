@@ -1,10 +1,10 @@
 /**
  * JSON 渲染器插件
- * 集成 @maliang47/vschema 并注册 NaiveUI 和自定义组件
+ * 集成 vschema-ui 并注册 NaiveUI 和自定义组件
  */
 
 import type { App, Component } from 'vue';
-import { createVSchemaPlugin, type RequestConfig as RendererRequestConfig } from '@maliang47/vschema';
+import { createVSchemaPlugin, type RequestConfig as RendererRequestConfig } from 'vschema-ui';
 import * as NaiveUI from 'naive-ui';
 import { jsonRendererConfig } from '@/config/json-renderer';
 import { localStg } from '@/utils/storage';
@@ -36,8 +36,7 @@ import ThemeButton from '@/layouts/modules/global-header/components/theme-button
 import UserAvatar from '@/layouts/modules/global-header/components/user-avatar.vue';
 
 // 高级组件导入
-import TableHeaderOperation from '@/components/advanced/table-header-operation.vue';
-import TableColumnSetting from '@/components/advanced/table-column-setting.vue';
+import TableColumnSetting from '@/components/common/table-column-setting.vue';
 
 // JSON 渲染相关组件导入
 import SchemaEditor from '@/components/json/SchemaEditor.vue';
@@ -215,7 +214,6 @@ export const customComponents: Record<string, Component> = {
   ThemeButton,
   UserAvatar,
   // 高级组件
-  TableHeaderOperation,
   TableColumnSetting,
   // JSON 渲染相关组件
   SchemaEditor,

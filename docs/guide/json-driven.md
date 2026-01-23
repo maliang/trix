@@ -31,10 +31,10 @@ JSON Schema → VSchema 渲染引擎 → Vue 组件 → 页面
 
 ### VSchema
 
-`VSchema` 是 JSON Schema 渲染引擎，由 `@maliang47/vschema` 提供：
+`VSchema` 是 JSON Schema 渲染引擎，由 `vschema-ui` 提供：
 
 ```typescript
-import { createVSchemaPlugin } from '@maliang47/vschema'
+import { createVSchemaPlugin } from 'vschema-ui'
 
 // 注册组件和配置
 const plugin = createVSchemaPlugin({

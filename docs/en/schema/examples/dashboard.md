@@ -214,7 +214,7 @@ The dashboard includes:
               "children": [
                 { "com": "NDescriptionsItem", "props": { "label": "Name" }, "children": "Trix Admin" },
                 { "com": "NDescriptionsItem", "props": { "label": "Stack" }, "children": "Vue 3 + TypeScript" },
-                { "com": "NDescriptionsItem", "props": { "label": "Renderer" }, "children": "@maliang47/vschema" }
+                { "com": "NDescriptionsItem", "props": { "label": "Renderer" }, "children": "vschema-ui" }
               ]
             }]
           }]

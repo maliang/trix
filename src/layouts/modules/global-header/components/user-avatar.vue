@@ -6,7 +6,7 @@ import { useRouter } from 'vue-router';
 import { $t } from '@/locales';
 import SvgIcon from '@/components/custom/svg-icon.vue';
 import { get, post } from '@/service/request';
-import type { JsonNode } from '@maliang47/vschema';
+import type { JsonNode } from 'vschema-ui';
 
 defineOptions({
   name: 'UserAvatar'

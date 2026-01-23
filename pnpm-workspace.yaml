@@ -9,4 +9,4 @@ ignoredBuiltDependencies:
   - vue-demi
 
 overrides:
-  '@maliang47/vschema': link:../vschema
+  'vschema-ui': link:../vschema

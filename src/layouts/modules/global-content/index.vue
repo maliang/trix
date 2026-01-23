@@ -41,7 +41,7 @@ function resetScroll() {
         :is="Component"
         v-if="appStore.reloadFlag"
         :class="{ 'p-16px': showPadding }"
-        class="flex-grow bg-layout transition-300"
+        class="flex-1-hidden bg-layout transition-300"
       />
     </Transition>
   </RouterView>

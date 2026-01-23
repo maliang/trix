@@ -4,8 +4,10 @@
  * 
  * 封装 NDataTable，支持通过 JSON schema 的 slots 配置来渲染自定义列内容
  * 将 slots 配置转换为 NDataTable 需要的 render 函数
+ * 
+ * 注意：当 flexHeight 为 true 时，需要确保父容器有明确高度
  */
-import { computed, h, useSlots, type VNode } from 'vue';
+import { computed, useSlots } from 'vue';
 import { NDataTable } from 'naive-ui';
 import type { DataTableColumn } from 'naive-ui';
 
@@ -36,6 +38,8 @@ interface Props {
   defaultExpandAll?: boolean;
   /** 横向滚动宽度 */
   scrollX?: number | string;
+  /** 弹性高度，为 true 时表格高度自适应父容器 */
+  flexHeight?: boolean;
   /** 其他 NDataTable 支持的 props */
   [key: string]: any;
 }
@@ -47,6 +51,7 @@ const props = withDefaults(defineProps<Props>(), {
   checkedRowKeys: () => [],
   expandedRowKeys: () => [],
   defaultExpandAll: false,
+  flexHeight: false,
 });
 
 const emit = defineEmits<{
@@ -118,7 +123,25 @@ function handleExpandedRowKeysChange(keys: (string | number)[]) {
 </script>
 
 <template>
+  <!-- 当 flexHeight 为 true 时，包裹一个 flex 容器确保高度正确传递 -->
+  <div v-if="flexHeight" class="json-data-table-wrapper">
+    <NDataTable
+      :data="data"
+      :columns="processedColumns"
+      :loading="loading"
+      :row-key="rowKey"
+      :checked-row-keys="checkedRowKeys"
+      :expanded-row-keys="expandedRowKeys"
+      :default-expand-all="defaultExpandAll"
+      :scroll-x="scrollX"
+      :flex-height="true"
+      v-bind="$attrs"
+      @update:checked-row-keys="handleCheckedRowKeysChange"
+      @update:expanded-row-keys="handleExpandedRowKeysChange"
+    />
+  </div>
   <NDataTable
+    v-else
     :data="data"
     :columns="processedColumns"
     :loading="loading"
@@ -132,3 +155,16 @@ function handleExpandedRowKeysChange(keys: (string | number)[]) {
     @update:expanded-row-keys="handleExpandedRowKeysChange"
   />
 </template>
+
+<style scoped>
+.json-data-table-wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.json-data-table-wrapper :deep(.n-data-table) {
+  flex: 1 1 0%;
+  min-height: 0;
+}
+</style>

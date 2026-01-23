@@ -63,4 +63,4 @@ pnpm dev
 | NaiveUI | 2.x | Vue 3 组件库 |
 | UnoCSS | 66.x | 原子化 CSS 引擎 |
 | Pinia | 3.x | Vue 状态管理 |
-| @maliang47/vschema | 1.x | JSON Schema 渲染引擎 |
+| vschema-ui | 1.x | JSON Schema 渲染引擎 |

@@ -3,9 +3,10 @@
  * 用于获取 JSON Schema 配置
  */
 
-import type { JsonNode } from '@maliang47/vschema';
+import type { JsonNode } from 'vschema-ui';
 import { responseConfig, getValueByPath } from '@/config/response';
 import { get } from '@/service/request';
+import { getBaseUrl } from '@/store/modules/theme/shared';
 
 /**
  * 获取页面 Schema
@@ -32,7 +33,9 @@ export async function fetchSchema(source: string): Promise<JsonNode> {
  */
 async function fetchStaticSchema(path: string): Promise<JsonNode> {
   try {
-    const response = await fetch(path);
+    // 添加 VITE_BASE_URL 前缀
+    const url = getBaseUrl(path);
+    const response = await fetch(url);
     
     if (!response.ok) {
       const error = new Error(`获取 Schema 失败: ${response.status} ${response.statusText}`);

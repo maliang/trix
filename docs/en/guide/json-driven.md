@@ -31,10 +31,10 @@ JSON Schema → VSchema Rendering Engine → Vue Components → Page
 
 ### VSchema
 
-`VSchema` is the JSON Schema rendering engine, provided by `@maliang47/vschema`:
+`VSchema` is the JSON Schema rendering engine, provided by `vschema-ui`:
 
 ```typescript
-import { createVSchemaPlugin } from '@maliang47/vschema'
+import { createVSchemaPlugin } from 'vschema-ui'
 
 // Register components and configuration
 const plugin = createVSchemaPlugin({

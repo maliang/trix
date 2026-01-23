@@ -10,8 +10,8 @@
 import { describe, it, expect } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import { createApp, defineComponent, h, nextTick } from 'vue';
-import { createVSchemaPlugin } from '@maliang47/vschema';
-import type { JsonNode } from '@maliang47/vschema';
+import { createVSchemaPlugin } from 'vschema-ui';
+import type { JsonNode } from 'vschema-ui';
 import { getAllComponents, getNaiveUIComponents, customComponents } from '@/plugins/json-renderer';
 
 // 创建测试插件实例

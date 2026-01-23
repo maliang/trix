@@ -1,6 +1,6 @@
 # JSON Schema 概述
 
-Trix Admin 使用 JSON Schema 来描述页面结构，通过 `@maliang47/vschema` 渲染引擎将 JSON 配置转换为 Vue 组件。
+Trix Admin 使用 JSON Schema 来描述页面结构，通过 `vschema-ui` 渲染引擎将 JSON 配置转换为 Vue 组件。
 
 ## 什么是 JSON Schema
 

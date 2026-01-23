@@ -5,7 +5,7 @@
  */
 import { computed, onMounted } from 'vue';
 import { NSpin } from 'naive-ui';
-import type { JsonNode } from '@maliang47/vschema';
+import type { JsonNode } from 'vschema-ui';
 import { useAuthStore } from '@/store/modules/auth';
 import { useThemeStore } from '@/store/modules/theme';
 import { setRouterGuardOptions } from '@/router/guard';

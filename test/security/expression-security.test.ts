@@ -14,7 +14,7 @@ import fc from 'fast-check';
 import {
   createExpressionEvaluator,
   isExpressionSafe,
-} from '@maliang47/vschema';
+} from 'vschema-ui';
 
 // 创建测试用的求值器实例
 const evaluator = createExpressionEvaluator();

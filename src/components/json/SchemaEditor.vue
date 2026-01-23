@@ -21,7 +21,7 @@ import {
   NCollapseItem,
   useMessage
 } from 'naive-ui';
-import type { JsonNode } from '@maliang47/vschema';
+import type { JsonNode } from 'vschema-ui';
 
 // 使用 resolveComponent 获取全局注册的 VSchema 组件
 const VSchema = resolveComponent('VSchema');

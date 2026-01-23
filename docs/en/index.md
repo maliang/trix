@@ -63,4 +63,4 @@ pnpm dev
 | NaiveUI | 2.x | Vue 3 Component Library |
 | UnoCSS | 66.x | Atomic CSS Engine |
 | Pinia | 3.x | Vue State Management |
-| @maliang47/vschema | 1.x | JSON Schema Rendering Engine |
+| vschema-ui | 1.x | JSON Schema Rendering Engine |

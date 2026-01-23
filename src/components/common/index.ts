@@ -12,6 +12,7 @@ export { default as PinToggler } from './pin-toggler.vue';
 export { default as ReloadButton } from './reload-button.vue';
 export { default as SystemLogo } from './system-logo.vue';
 export { default as ThemeSchemaSwitch } from './theme-schema-switch.vue';
+export { default as TableColumnSetting } from './table-column-setting.vue';
 
 // Header 通知组件
 export { HeaderNotification } from './header-notification';

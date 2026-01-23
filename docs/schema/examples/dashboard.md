@@ -214,7 +214,7 @@
               "children": [
                 { "com": "NDescriptionsItem", "props": { "label": "项目名称" }, "children": "Trix Admin" },
                 { "com": "NDescriptionsItem", "props": { "label": "技术栈" }, "children": "Vue 3 + TypeScript" },
-                { "com": "NDescriptionsItem", "props": { "label": "渲染引擎" }, "children": "@maliang47/vschema" }
+                { "com": "NDescriptionsItem", "props": { "label": "渲染引擎" }, "children": "vschema-ui" }
               ]
             }]
           }]

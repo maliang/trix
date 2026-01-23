@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, resolveComponent } from 'vue';
 import { NSpin } from 'naive-ui';
-import type { JsonNode } from '@maliang47/vschema';
+import type { JsonNode } from 'vschema-ui';
 import { useSchemaLoader, useSchemaMethods } from '@/hooks';
 
 defineOptions({
