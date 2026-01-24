@@ -9,7 +9,7 @@
  * - $methods.$tab.close() - 关闭标签
  * - $methods.$tab.open(path, title?) - 新建标签页
  * - $methods.$tab.fix() - 固定标签页
- * - $methods.$window.open(url) - 打开新窗口
+ * - $methods.$window.open(url) - 打开新窗口（相对路径自动添加 API baseURL）
  * - $methods.$message.success(content) - 成功消息
  * - $methods.$message.error(content) - 错误消息
  * - $methods.$dialog.warning(options) - 警告对话框
@@ -19,6 +19,9 @@
 
 import { useRoute, useRouter } from 'vue-router';
 import { useTabStore } from '@/store/modules/tab';
+
+// API 基础 URL
+const API_BASE_URL = import.meta.env.VITE_SERVICE_BASE_URL || '';
 
 /**
  * Schema 内置方法
@@ -203,12 +206,16 @@ export function useSchemaMethods() {
   const $window = {
     /**
      * 在新窗口打开 URL
-     * @param url 目标 URL
+     * @param url 目标 URL（相对路径自动添加 API baseURL）
      * @param target 窗口名称，默认 _blank
      * @param features 窗口特性
      */
     open(url: string, target = '_blank', features?: string) {
-      window.open(url, target, features);
+      // 如果是相对路径（以 / 开头但不是 //），自动添加 API baseURL
+      const fullUrl = url.startsWith('/') && !url.startsWith('//') 
+        ? `${API_BASE_URL}${url}` 
+        : url;
+      window.open(fullUrl, target, features);
     },
     
     /**
@@ -225,6 +232,26 @@ export function useSchemaMethods() {
       window.print();
     }
   };
+
+  /**
+   * 文件下载方法
+   * @param data Blob 数据或 URL
+   * @param filename 文件名
+   */
+  function $download(data: Blob | string, filename: string) {
+    const url = typeof data === 'string' ? data : URL.createObjectURL(data);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    // 如果是 Blob URL，释放内存
+    if (typeof data !== 'string') {
+      URL.revokeObjectURL(url);
+    }
+  }
 
   /**
    * NaiveUI 全局 API 包装器
@@ -272,6 +299,7 @@ export function useSchemaMethods() {
     $nav,
     $tab,
     $window,
+    $download,
     $message,
     $dialog,
     $notification,
@@ -282,6 +310,7 @@ export function useSchemaMethods() {
     $nav,
     $tab,
     $window,
+    $download,
     $message,
     $dialog,
     $notification,
