@@ -10,6 +10,7 @@
  * - $methods.$tab.open(path, title?) - 新建标签页
  * - $methods.$tab.fix() - 固定标签页
  * - $methods.$window.open(url) - 打开新窗口（相对路径自动添加 API baseURL）
+ * - $methods.$download(url, filename, options?) - 下载文件（自动携带 token）
  * - $methods.$message.success(content) - 成功消息
  * - $methods.$message.error(content) - 错误消息
  * - $methods.$dialog.warning(options) - 警告对话框
@@ -19,6 +20,7 @@
 
 import { useRoute, useRouter } from 'vue-router';
 import { useTabStore } from '@/store/modules/tab';
+import { request } from '@/service';
 
 // API 基础 URL
 const API_BASE_URL = import.meta.env.VITE_SERVICE_BASE_URL || '';
@@ -235,22 +237,83 @@ export function useSchemaMethods() {
 
   /**
    * 文件下载方法
-   * @param data Blob 数据或 URL
-   * @param filename 文件名
+   * 支持两种调用方式：
+   * 1. $download(url, filename?, options?) - 自动发起带 token 的请求下载
+   * 2. $download(blob, filename?) - 直接下载已有的 Blob 数据
+   * 
+   * @param urlOrBlob URL 字符串或 Blob 数据
+   * @param filename 文件名（可选，默认从响应头或 URL 提取）
+   * @param options 可选配置 { method, params, data }
    */
-  function $download(data: Blob | string, filename: string) {
-    const url = typeof data === 'string' ? data : URL.createObjectURL(data);
+  async function $download(
+    urlOrBlob: string | Blob,
+    filename?: string,
+    options?: {
+      method?: 'GET' | 'POST';
+      params?: Record<string, any>;
+      data?: any;
+    }
+  ): Promise<void> {
+    let blob: Blob;
+    let finalFilename = filename;
+
+    if (urlOrBlob instanceof Blob) {
+      blob = urlOrBlob;
+      finalFilename = finalFilename || 'download';
+    } else {
+      // 使用 service 层的 request，自动处理 baseURL 和 token
+      const result = await request<Blob>({
+        url: urlOrBlob,
+        method: options?.method || 'GET',
+        params: options?.params,
+        data: options?.data,
+        responseType: 'blob',
+        showErrorMessage: true
+      });
+
+      if (result.error || !result.data) {
+        throw result.error || new Error('Download failed');
+      }
+
+      blob = result.data;
+
+      // 尝试从响应头提取文件名
+      if (!finalFilename && result.response) {
+        const disposition = result.response.headers?.get('Content-Disposition');
+        if (disposition) {
+          // 匹配 filename*=UTF-8''xxx 或 filename="xxx" 或 filename=xxx
+          const utf8Match = disposition.match(/filename\*=UTF-8''([^;\s]+)/i);
+          const quotedMatch = disposition.match(/filename="([^"]+)"/i);
+          const plainMatch = disposition.match(/filename=([^;\s]+)/i);
+          
+          if (utf8Match) {
+            finalFilename = decodeURIComponent(utf8Match[1]);
+          } else if (quotedMatch) {
+            finalFilename = quotedMatch[1];
+          } else if (plainMatch) {
+            finalFilename = plainMatch[1];
+          }
+        }
+      }
+
+      // 从 URL 提取文件名作为后备
+      if (!finalFilename) {
+        const urlPath = urlOrBlob.split('?')[0];
+        const urlFilename = urlPath.split('/').pop();
+        finalFilename = urlFilename || 'download';
+      }
+    }
+
+    // 触发下载
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = filename;
+    link.download = finalFilename;
     link.style.display = 'none';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    // 如果是 Blob URL，释放内存
-    if (typeof data !== 'string') {
-      URL.revokeObjectURL(url);
-    }
+    URL.revokeObjectURL(url);
   }
 
   /**

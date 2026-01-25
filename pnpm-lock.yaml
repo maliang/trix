@@ -81,8 +81,8 @@ importers:
         specifier: ^3.11.2
         version: 3.11.2
       vschema-ui:
-        specifier: ^1.3.10
-        version: 1.3.10(vue@3.5.26(typescript@5.9.3))
+        specifier: ^1.3.11
+        version: 1.3.11(vue@3.5.26(typescript@5.9.3))
       vue:
         specifier: 3.5.26
         version: 3.5.26(typescript@5.9.3)
@@ -2095,8 +2095,8 @@ packages:
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
 
-  baseline-browser-mapping@2.9.17:
-    resolution: {integrity: sha512-agD0MgJFUP/4nvjqzIB29zRPUuCF7Ge6mEv9s8dHrtYD7QWXRcx75rOADE/d5ah1NI+0vkDl0yorDd5U852IQQ==}
+  baseline-browser-mapping@2.9.18:
+    resolution: {integrity: sha512-e23vBV1ZLfjb9apvfPk4rHVu2ry6RIr2Wfs+O324okSidrX7pTAnEJPCh/O5BtRlr7QtZI7ktOP3vsqr7Z5XoA==}
     hasBin: true
 
   bidi-js@1.0.3:
@@ -2461,8 +2461,8 @@ packages:
     engines: {node: '>=14'}
     hasBin: true
 
-  electron-to-chromium@1.5.277:
-    resolution: {integrity: sha512-wKXFZw4erWmmOz5N/grBoJ2XrNJGDFMu2+W5ACHza5rHtvsqrK4gb6rnLC7XxKB9WlJ+RmyQatuEXmtm86xbnw==}
+  electron-to-chromium@1.5.278:
+    resolution: {integrity: sha512-dQ0tM1svDRQOwxnXxm+twlGTjr9Upvt8UFWAgmLsxEzFQxhbti4VwxmMjsDxVC51Zo84swW7FVCXEV+VAkhuPw==}
 
   emoji-regex-xs@1.0.0:
     resolution: {integrity: sha512-LRlerrMYoIDrT6jgpeZ2YYl/L8EulRTt5hQcYjy5AInh7HWXKimpqx68aknBFpGL2+/IcogTcaydJEgaTmOpDg==}
@@ -4202,8 +4202,8 @@ packages:
     peerDependencies:
       vue: ^3.0.0
 
-  vschema-ui@1.3.10:
-    resolution: {integrity: sha512-MVOt6kYpWvyKF9dZTJC23pAwv1oJcyyWLMrYQjoW02YKaww9eEKNQ6Teg0oY+cxp0zwth76+q2fasqifzwi+ag==}
+  vschema-ui@1.3.11:
+    resolution: {integrity: sha512-KgxOI2O+RvgLYjKEFQ5PvSirPt/ea/tTTU652sII5XRpYAk5qSel8/1dvKRofedIXdjd2K+poXtb/0aow8KyrQ==}
     peerDependencies:
       vue: ^3.3.0
 
@@ -6241,7 +6241,7 @@ snapshots:
 
   balanced-match@1.0.2: {}
 
-  baseline-browser-mapping@2.9.17: {}
+  baseline-browser-mapping@2.9.18: {}
 
   bidi-js@1.0.3:
     dependencies:
@@ -6268,9 +6268,9 @@ snapshots:
 
   browserslist@4.28.1:
     dependencies:
-      baseline-browser-mapping: 2.9.17
+      baseline-browser-mapping: 2.9.18
       caniuse-lite: 1.0.30001766
-      electron-to-chromium: 1.5.277
+      electron-to-chromium: 1.5.278
       node-releases: 2.0.27
       update-browserslist-db: 1.2.3(browserslist@4.28.1)
 
@@ -6602,7 +6602,7 @@ snapshots:
       minimatch: 9.0.1
       semver: 7.7.3
 
-  electron-to-chromium@1.5.277: {}
+  electron-to-chromium@1.5.278: {}
 
   emoji-regex-xs@1.0.0: {}
 
@@ -8456,7 +8456,7 @@ snapshots:
       evtd: 0.2.4
       vue: 3.5.26(typescript@5.9.3)
 
-  vschema-ui@1.3.10(vue@3.5.26(typescript@5.9.3)):
+  vschema-ui@1.3.11(vue@3.5.26(typescript@5.9.3)):
     dependencies:
       vue: 3.5.26(typescript@5.9.3)
 
