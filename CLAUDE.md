@@ -6,7 +6,7 @@
 
 Trix Admin 是一个基于 JSON Schema 驱动的后台管理系统，核心特点是通过 JSON 配置来渲染页面，减少重复的模板代码编写。使用 vschema-ui 作为 JSON 渲染引擎。
 
-- 版本：1.0.2
+- 版本：1.0.3
 - Monorepo 结构（pnpm workspace）
 
 ## 技术栈
@@ -36,8 +36,8 @@ trix/
 │   ├── components/
 │   │   ├── business/      # 业务组件（IconPicker, FlowEditor, MarkdownEditor, RichEditor）
 │   │   ├── common/        # 通用组件（HeaderNotification, TableColumnSetting 等）
-│   │   ├── custom/        # 自定义组件（ButtonIcon, CountTo, VueECharts 等）
-│   │   └── json/          # JSON 渲染组件（SchemaEditor, ErrorBoundary, JsonDataTable）
+│   │   ├── custom/        # 自定义组件（ButtonIcon, CountTo, VueECharts, BetterScroll 等）
+│   │   └── json/          # JSON 渲染组件（SchemaEditor, ErrorBoundary, JsonDataTable, DynamicPage, HeaderRight）
 │   ├── config/            # 配置文件
 │   │   ├── json-renderer.ts  # vschema 配置
 │   │   └── response.ts       # API 响应格式配置
@@ -88,7 +88,7 @@ export const jsonRendererConfig = {
 
 ### 已注册组件
 
-vschema 插件自动注册：所有 NaiveUI 组件、自定义组件（SvgIcon, ButtonIcon, CountTo, VueECharts 等）、业务组件（IconPicker, FlowEditor, MarkdownEditor, RichEditor）、JSON 组件（SchemaEditor, ErrorBoundary, JsonDataTable）。
+vschema 插件自动注册：所有 NaiveUI 组件、自定义组件（SvgIcon, ButtonIcon, CountTo, VueECharts, BetterScroll 等）、业务组件（IconPicker, FlowEditor, MarkdownEditor, RichEditor）、JSON 组件（SchemaEditor, ErrorBoundary, JsonDataTable, DynamicPage, HeaderRight）。
 
 ## 开发规范
 

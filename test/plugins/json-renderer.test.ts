@@ -116,7 +116,6 @@ describe('JSON 渲染器插件 - 组件注册', () => {
         'ButtonIcon',
         'CountTo',
         'BetterScroll',
-        'WaveBg',
         'DarkModeContainer',
         'ExceptionBase',
         'FullScreen',

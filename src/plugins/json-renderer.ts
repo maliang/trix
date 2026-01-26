@@ -15,7 +15,6 @@ import SvgIcon from '@/components/custom/svg-icon.vue';
 import ButtonIcon from '@/components/custom/button-icon.vue';
 import CountTo from '@/components/custom/count-to.vue';
 import BetterScroll from '@/components/custom/better-scroll.vue';
-import WaveBg from '@/components/custom/wave-bg.vue';
 import VueECharts from '@/components/custom/vue-echarts.vue';
 
 // 通用组件导入
@@ -194,7 +193,6 @@ export const customComponents: Record<string, Component> = {
   ButtonIcon,
   CountTo,
   BetterScroll,
-  WaveBg,
   VueECharts,
   // 通用组件
   DarkModeContainer,

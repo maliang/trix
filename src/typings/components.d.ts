@@ -78,7 +78,6 @@ declare module 'vue' {
     TaskNode: typeof import('./../components/business/flow-editor/nodes/TaskNode.vue')['default']
     ThemeSchemaSwitch: typeof import('./../components/common/theme-schema-switch.vue')['default']
     VueEcharts: typeof import('./../components/custom/vue-echarts.vue')['default']
-    WaveBg: typeof import('./../components/custom/wave-bg.vue')['default']
   }
 }
 
@@ -150,5 +149,4 @@ declare global {
   const TaskNode: typeof import('./../components/business/flow-editor/nodes/TaskNode.vue')['default']
   const ThemeSchemaSwitch: typeof import('./../components/common/theme-schema-switch.vue')['default']
   const VueEcharts: typeof import('./../components/custom/vue-echarts.vue')['default']
-  const WaveBg: typeof import('./../components/custom/wave-bg.vue')['default']
 }
