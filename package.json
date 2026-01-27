@@ -1,7 +1,7 @@
 {
   "name": "trix-admin",
   "type": "module",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Trix Admin - JSON 驱动的后台管理系统，基于 Vue3、Vite、TypeScript、NaiveUI 和 vschema-ui",
   "author": "maliang <maliang47@foxmail.com>",
   "license": "MIT",
