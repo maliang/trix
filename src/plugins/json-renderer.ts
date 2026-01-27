@@ -6,9 +6,9 @@
 import type { App, Component } from 'vue';
 import { createVSchemaPlugin, type RequestConfig as RendererRequestConfig } from 'vschema-ui';
 import * as NaiveUI from 'naive-ui';
+import { Icon } from '@iconify/vue';
 import { jsonRendererConfig } from '@/config/json-renderer';
 import { localStg } from '@/utils/storage';
-import { useRouter } from 'vue-router';
 
 // 自定义组件导入
 import SvgIcon from '@/components/custom/svg-icon.vue';
@@ -188,6 +188,8 @@ export const naiveUIComponentNames = [
  * soybean-admin 自定义组件映射
  */
 export const customComponents: Record<string, Component> = {
+  // Iconify 图标组件
+  Icon,
   // 自定义组件
   SvgIcon,
   ButtonIcon,
