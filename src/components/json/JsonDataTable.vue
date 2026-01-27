@@ -146,6 +146,10 @@ interface Props {
   /** 获取 CSV 表头内容 */
   getCsvHeader?: (column: any) => string;
 
+  // ========== 异步加载相关 ==========
+  /** 异步加载子节点数据的回调函数（用于树形数据） */
+  onLoad?: (rowData: any) => Promise<void>;
+
   /** 其他 NDataTable 支持的 props */
   [key: string]: any;
 }
@@ -201,7 +205,6 @@ const emit = defineEmits<{
   'update:sorter': [sorter: any];
   'update:filters': [filters: any];
   'scroll': [e: Event];
-  'load': [rowData: any];
 }>();
 
 // 获取 slots - vue-json-schema 传递的是函数形式的 slots
@@ -290,11 +293,6 @@ function handleFiltersChange(filters: any) {
 function handleScroll(e: Event) {
   emit('scroll', e);
 }
-
-// 处理加载事件
-function handleLoad(rowData: any) {
-  emit('load', rowData);
-}
 </script>
 
 <template>
@@ -347,6 +345,7 @@ function handleLoad(rowData: any) {
       :filter-icon-popover-props="filterIconPopoverProps"
       :get-csv-cell="getCsvCell"
       :get-csv-header="getCsvHeader"
+      :on-load="onLoad"
       v-bind="$attrs"
       @update:checked-row-keys="handleCheckedRowKeysChange"
       @update:expanded-row-keys="handleExpandedRowKeysChange"
@@ -355,7 +354,6 @@ function handleLoad(rowData: any) {
       @update:sorter="handleSorterChange"
       @update:filters="handleFiltersChange"
       @scroll="handleScroll"
-      @load="handleLoad"
     />
   </div>
   <NDataTable
@@ -405,6 +403,7 @@ function handleLoad(rowData: any) {
     :filter-icon-popover-props="filterIconPopoverProps"
     :get-csv-cell="getCsvCell"
     :get-csv-header="getCsvHeader"
+    :on-load="onLoad"
     v-bind="$attrs"
     @update:checked-row-keys="handleCheckedRowKeysChange"
     @update:expanded-row-keys="handleExpandedRowKeysChange"
@@ -413,7 +412,6 @@ function handleLoad(rowData: any) {
     @update:sorter="handleSorterChange"
     @update:filters="handleFiltersChange"
     @scroll="handleScroll"
-    @load="handleLoad"
   />
 </template>
 
