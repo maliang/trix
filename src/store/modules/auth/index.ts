@@ -147,8 +147,8 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     const userInfoApi = import.meta.env.VITE_USER_INFO_API || '/user';
     const { data, error } = await get<{
       id: number;
-      name: string;
-      nick_name: string;
+      username: string;
+      nickname: string;
       permissions: string[];
     }>(userInfoApi, {}, { showErrorMessage: false });
 
@@ -159,7 +159,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
 
     Object.assign(userInfo, {
       userId: String(data.id),
-      userName: data.nick_name || data.name,
+      userName: data.nickname || data.username,
       permissions: data.permissions || []
     });
 
