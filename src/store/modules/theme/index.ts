@@ -146,6 +146,22 @@ export const useThemeStore = defineStore(SetupStoreId.Theme, () => {
     set: (val) => { settings.value.logo = val; }
   });
 
+  /**
+   * 设置应用标题
+   * @param title 新标题
+   */
+  function setAppTitle(title: string) {
+    appTitle.value = title;
+  }
+
+  /**
+   * 设置应用 Logo
+   * @param logoUrl Logo URL
+   */
+  function setLogo(logoUrl: string) {
+    logo.value = logoUrl;
+  }
+
   /** 重置 store */
   function resetStore() {
     // 使用深拷贝确保所有嵌套对象都被正确重置
@@ -488,6 +504,8 @@ export const useThemeStore = defineStore(SetupStoreId.Theme, () => {
     fixedHeaderAndTab,
     appTitle,
     logo,
+    setAppTitle,
+    setLogo,
     setGrayscale,
     setColourWeakness,
     resetStore,

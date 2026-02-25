@@ -9,6 +9,7 @@
  */
 
 import { responseConfig, parseResponse } from '@/config/response';
+import { getApiBaseUrl } from '@/config/backend';
 import { createRequestInterceptor, createResponseInterceptor, getAdapterConfig } from './adapter';
 import type { BackendResponse, RequestConfig, RequestResult, ResponseType } from './type';
 
@@ -95,7 +96,7 @@ function buildRequestInit(config: RequestConfig): RequestInit {
  * 若需要拿到原始数据，可通过 `responseType` 配置为 text/blob 或自行在上层处理。
  */
 export async function request<T = unknown>(config: RequestConfig): Promise<RequestResult<T>> {
-  const baseURL = config.baseURL ?? import.meta.env.VITE_SERVICE_BASE_URL ?? '';
+  const baseURL = config.baseURL ?? getApiBaseUrl();
   const timeout = config.timeout ?? DEFAULT_TIMEOUT;
   const responseType = detectResponseType(config.responseType);
 

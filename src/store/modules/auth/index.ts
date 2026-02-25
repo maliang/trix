@@ -30,6 +30,24 @@ export interface LoginToken {
 }
 
 /**
+ * 后台配置接口
+ */
+export interface BackendConfig {
+  /** 后台标题 */
+  app_title?: string;
+  /** 前端路径 */
+  path?: string;
+  /** API 前缀 */
+  api_prefix?: string;
+  /** Guard 名称 */
+  guard?: string;
+  /** Logo */
+  logo?: string;
+  /** 版权信息 */
+  copyright?: string;
+}
+
+/**
  * 认证 Store
  * 管理用户认证状态、登录、登出等功能
  */
@@ -45,6 +63,9 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     userName: '',
     permissions: []
   });
+
+  /** 后台配置 */
+  const backendConfig = ref<BackendConfig>(localStg.get('backendConfig') || {});
 
   /** 是否已登录 */
   const isLogin = computed(() => Boolean(token.value));
@@ -64,6 +85,8 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     userInfo.userName = '';
     userInfo.permissions = [];
     token.value = '';
+    backendConfig.value = {};
+    localStg.remove('backendConfig');
 
     // 如果当前路由需要认证，则跳转到登录页
     const currentRoute = router.currentRoute.value;
@@ -210,6 +233,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
         const loginApi = import.meta.env.VITE_LOGIN_API || '/login';
         const { data, error } = await post<{
           token: string;
+          config?: BackendConfig;
         }>(loginApi, { username: userName, password });
 
         if (error || !data) {
@@ -220,6 +244,19 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
           token: data.token,
           refreshToken: data.token
         };
+
+        // 保存后台配置
+        if (data.config) {
+          backendConfig.value = data.config;
+          localStg.set('backendConfig', data.config);
+
+          // 更新 app_title
+          if (data.config.app_title) {
+            const { useThemeStore } = await import('@/store/modules/theme');
+            const themeStore = useThemeStore();
+            themeStore.setAppTitle(data.config.app_title);
+          }
+        }
       }
 
       const pass = await loginByToken(loginToken);
@@ -276,6 +313,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     isLogin,
     permissions,
     loginLoading,
+    backendConfig,
     resetStore,
     login,
     logout,

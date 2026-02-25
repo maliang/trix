@@ -4,6 +4,7 @@
  */
 
 import { responseConfig } from './response';
+import { getApiBaseUrl } from './backend';
 
 /**
  * 全局状态注入配置接口
@@ -66,8 +67,8 @@ export interface JsonRendererConfig {
  * 注意：responseFormat 从 responseConfig 获取，保持与通用请求配置一致
  */
 export const jsonRendererConfig: JsonRendererConfig = {
-  // API 基础 URL，从环境变量读取
-  baseURL: import.meta.env.VITE_SERVICE_BASE_URL || '',
+  // API 基础 URL，优先使用后台注入的配置
+  baseURL: getApiBaseUrl(),
 
   // 响应数据提取路径（与 responseConfig.dataField 保持一致）
   responseDataPath: responseConfig.dataField,
