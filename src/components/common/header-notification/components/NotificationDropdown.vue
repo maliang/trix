@@ -269,7 +269,7 @@ function getTypeColor(type: string): 'warning' | 'info' | 'success' | 'error' | 
 <style scoped>
 .notification-dropdown {
   margin: -12px -16px;
-  width: 380px;
+  width: 420px;
   background: var(--n-color, #fff);
   border-radius: 8px;
   overflow: hidden;

@@ -92,7 +92,7 @@ onMounted(() => {
     v-model:show="showDropdown"
     trigger="click"
     placement="bottom-end"
-    :width="380"
+    :width="420"
     :show-arrow="false"
   >
     <template #trigger>
