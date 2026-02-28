@@ -12,6 +12,8 @@ interface Props {
   messages: NotificationMessage[];
   /** 未读小点颜色 */
   dotColor?: string;
+  /** 标题前缀字段 */
+  titlePrefixField?: string;
 }
 
 interface Emits {
@@ -19,7 +21,7 @@ interface Emits {
   (e: 'clickItem', message: NotificationMessage): void;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 defineEmits<Emits>();
 </script>
 
@@ -30,6 +32,7 @@ defineEmits<Emits>();
       :key="message.id"
       :message="message"
       :dot-color="dotColor"
+      :title-prefix-field="titlePrefixField"
       @click="$emit('clickItem', message)"
     />
   </div>

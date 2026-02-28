@@ -12,6 +12,8 @@ interface Props {
   message: NotificationMessage;
   /** 未读小点颜色 */
   dotColor?: string;
+  /** 标题前缀字段，用于显示标题前的分类信息 */
+  titlePrefixField?: string;
 }
 
 const props = defineProps<Props>();
@@ -59,6 +61,17 @@ const unreadBgStyle = computed(() => {
   }
   return {};
 });
+
+/**
+ * 标题前缀
+ */
+const titlePrefix = computed(() => {
+  if (props.titlePrefixField) {
+    const prefix = props.message[props.titlePrefixField as keyof NotificationMessage];
+    return prefix || '';
+  }
+  return '';
+});
 </script>
 
 <template>
@@ -77,6 +90,7 @@ const unreadBgStyle = computed(() => {
         <!-- 标题和时间 -->
         <div class="item-header">
           <span class="item-title" :class="{ 'is-unread': !message.isRead }">
+            <span v-if="titlePrefix" class="item-prefix">{{ titlePrefix }}</span>
             {{ message.title }}
           </span>
           <span class="item-time">{{ timeAgo }}</span>
@@ -157,6 +171,10 @@ const unreadBgStyle = computed(() => {
 
 .item-title.is-unread {
   font-weight: 600;
+}
+
+.item-prefix {
+  margin-right: 4px;
 }
 
 .item-time {

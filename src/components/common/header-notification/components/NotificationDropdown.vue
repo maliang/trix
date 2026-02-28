@@ -32,6 +32,8 @@ interface Props {
   showDetail?: boolean;
   /** 当前查看的消息 */
   currentMessage?: NotificationMessage | null;
+  /** 标题前缀字段 */
+  titlePrefixField?: string;
 }
 
 interface Emits {
@@ -195,6 +197,7 @@ function getTypeColor(type: string): 'warning' | 'info' | 'success' | 'error' | 
               v-if="displayMessages.length > 0"
               :messages="displayMessages"
               :dot-color="tabBadgeColor"
+              :title-prefix-field="titlePrefixField"
               @click-item="(msg) => emit('clickItem', msg)"
             />
 

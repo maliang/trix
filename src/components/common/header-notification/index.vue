@@ -121,6 +121,7 @@ onMounted(() => {
       :enable-detail="enableDetail"
       :show-detail="showDetail"
       :current-message="currentMessage"
+      :title-prefix-field="titlePrefixField"
       @change-tab="handleTabChange"
       @load-more="loadMore"
       @click-item="handleItemClick"

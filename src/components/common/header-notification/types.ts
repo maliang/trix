@@ -62,6 +62,8 @@ export interface HeaderNotificationProps {
   tabBadgeColor?: string;
   /** 是否启用详情展示，默认 true */
   enableDetail?: boolean;
+  /** 标题前缀字段，用于显示标题前的分类信息，如 'titleWithCategory' */
+  titlePrefixField?: string;
 }
 
 /** 分页响应数据 */
