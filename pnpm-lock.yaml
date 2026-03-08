@@ -84,8 +84,8 @@ importers:
         specifier: ^3.11.2
         version: 3.11.2
       vschema-ui:
-        specifier: ^1.3.13
-        version: 1.3.13(vue@3.5.26(typescript@5.9.3))
+        specifier: ^1.3.14
+        version: 1.3.14(vue@3.5.26(typescript@5.9.3))
       vue:
         specifier: 3.5.26
         version: 3.5.26(typescript@5.9.3)
@@ -4230,8 +4230,8 @@ packages:
     peerDependencies:
       vue: ^3.0.0
 
-  vschema-ui@1.3.13:
-    resolution: {integrity: sha512-awWpKnak9DXyngNNcmzToHFWhgblma1FwkYyTjLnqhn97K/F1YQ5lkLLwxU/g8w3YrmoOL1W0qQPDtX2/VXuYg==}
+  vschema-ui@1.3.14:
+    resolution: {integrity: sha512-eqBKKFMba62B7ja8ZYiqN728WdYL/8yUUddlDzf0zmjYAYwj6NzYTB8bhAG7MxljTMOXzmq+xyvQ8dQ13A+42g==}
     peerDependencies:
       vue: ^3.3.0
 
@@ -8496,7 +8496,7 @@ snapshots:
       evtd: 0.2.4
       vue: 3.5.26(typescript@5.9.3)
 
-  vschema-ui@1.3.13(vue@3.5.26(typescript@5.9.3)):
+  vschema-ui@1.3.14(vue@3.5.26(typescript@5.9.3)):
     dependencies:
       vue: 3.5.26(typescript@5.9.3)
 
