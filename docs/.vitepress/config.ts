@@ -220,7 +220,7 @@ export default defineConfig({
   base: '/trix/',
   
   head: [
-    ['link', { rel: 'icon', href: '/favicon.svg' }]
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' }]
   ],
 
   locales: {
