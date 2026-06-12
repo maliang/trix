@@ -96,8 +96,7 @@ function collectDefaultAfterLoginRoute(to: RouteLocationNormalized) {
     }
     
     // 同时添加到 tabStore 的默认标签页
-    try {
-      const { useTabStore } = require('@/store/modules/tab');
+    import('@/store/modules/tab').then(({ useTabStore }) => {
       const tabStore = useTabStore();
       tabStore.addDefaultTab({
         name: to.name as string,
@@ -108,9 +107,9 @@ function collectDefaultAfterLoginRoute(to: RouteLocationNormalized) {
           icon: to.meta.icon as string
         }
       });
-    } catch (e) {
+    }).catch(() => {
       // store 可能还未初始化，忽略错误
-    }
+    });
   }
 }
 

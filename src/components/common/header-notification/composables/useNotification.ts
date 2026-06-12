@@ -4,7 +4,7 @@
  * @requirements 3.3, 3.4, 4.1, 4.5, 5.3, 5.4, 5.5, 6.1, 6.2
  */
 
-import { ref, computed, watch, type Ref, type ComputedRef } from 'vue';
+import { ref, computed, watch, onUnmounted, type Ref, type ComputedRef } from 'vue';
 import { useNotificationStore } from '@/store/modules/notification';
 import { useWebSocket } from './useWebSocket';
 import { get, post } from '@/service/request';
@@ -12,7 +12,8 @@ import type {
   HeaderNotificationProps,
   NotificationMessage,
   NotificationPageData,
-  NotificationTabConfig
+  NotificationTabConfig,
+  PollResponseData
 } from '../types';
 
 /** useNotification Hook 返回值 */
@@ -58,6 +59,12 @@ export interface UseNotificationReturn {
   changeTab: (tab: string) => void;
   /** 初始化标签页配置 */
   initTabs: (tabs?: NotificationTabConfig[]) => void;
+  /** 启动轮询 */
+  startPolling: () => void;
+  /** 停止轮询 */
+  stopPolling: () => void;
+  /** 轮询是否运行中 */
+  isPolling: Ref<boolean>;
 }
 
 /**
@@ -292,6 +299,104 @@ export function useNotification(props: HeaderNotificationProps): UseNotification
     store.setTabTypesMap(map);
   }
 
+  // ==================== 轮询逻辑 ====================
+
+  /** 轮询定时器句柄 */
+  let pollingTimer: ReturnType<typeof setInterval> | null = null;
+  /** 轮询是否运行中 */
+  const isPolling = ref(false);
+  /** 当前最大消息 ID（用于增量拉取） */
+  let maxMessageId = 0;
+
+  /**
+   * 处理轮询拉取到的新消息
+   * @param response 轮询响应
+   */
+  function handlePollResult(response: PollResponseData): void {
+    if (!response.has_new || !response.messages || response.messages.length === 0) {
+      return;
+    }
+
+    for (const msg of response.messages) {
+      // 更新最大 ID
+      const id = Number(msg.id);
+      if (id > maxMessageId) {
+        maxMessageId = id;
+      }
+
+      // 处理新消息（与 WebSocket 共用 handleNewMessage）
+      handleNewMessage(msg);
+    }
+  }
+
+  /**
+   * 执行一次轮询请求
+   */
+  async function doPoll(): Promise<void> {
+    if (!props.pollingApi) {
+      console.warn('[Notification] 未配置 pollingApi');
+      stopPolling();
+      return;
+    }
+
+    try {
+      const params: Record<string, unknown> = {
+        since_id: maxMessageId,
+      };
+      if (store.activeTab && store.activeTab !== 'all') {
+        params.type = store.activeTab;
+      }
+
+      const { data, error } = await get<PollResponseData>(props.pollingApi, params);
+
+      if (error) {
+        console.error('[Notification] 轮询失败:', error);
+        return;
+      }
+
+      if (data) {
+        handlePollResult(data);
+      }
+    } catch (e) {
+      console.error('[Notification] 轮询异常:', e);
+    }
+  }
+
+  /**
+   * 启动轮询
+   */
+  function startPolling(): void {
+    if (pollingTimer !== null || isPolling.value) {
+      return;
+    }
+
+    const interval = props.pollingInterval ?? 15000;
+    if (interval < 1000) {
+      console.warn('[Notification] 轮询间隔过短，已调整为 1000ms');
+    }
+
+    isPolling.value = true;
+    pollingTimer = setInterval(() => {
+      doPoll();
+    }, Math.max(interval, 1000));
+  }
+
+  /**
+   * 停止轮询
+   */
+  function stopPolling(): void {
+    if (pollingTimer !== null) {
+      clearInterval(pollingTimer);
+      pollingTimer = null;
+    }
+    isPolling.value = false;
+  }
+
+  // 组件卸载时自动停止轮询
+  onUnmounted(() => {
+    stopPolling();
+  });
+
   // ==================== 监听 Props 变化 ====================
 
   // 监听 tabs 配置变化
@@ -328,6 +433,9 @@ export function useNotification(props: HeaderNotificationProps): UseNotification
     openDetail,
     closeDetail,
     changeTab,
-    initTabs
+    initTabs,
+    startPolling,
+    stopPolling,
+    isPolling
   };
 }

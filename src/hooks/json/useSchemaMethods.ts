@@ -21,6 +21,7 @@
 import { useRoute, useRouter } from 'vue-router';
 import { useTabStore } from '@/store/modules/tab';
 import { request } from '@/service';
+import type { MessageOptions, DialogOptions, NotificationOptions } from 'naive-ui';
 
 // API 基础 URL
 const API_BASE_URL = import.meta.env.VITE_SERVICE_BASE_URL || '';
@@ -322,29 +323,29 @@ export function useSchemaMethods() {
    * 使用包装函数避免直接暴露组件实例，防止 Vue 警告
    */
   const $message = {
-    success: (content: string, options?: any) => window.$message?.success(content, options),
-    error: (content: string, options?: any) => window.$message?.error(content, options),
-    warning: (content: string, options?: any) => window.$message?.warning(content, options),
-    info: (content: string, options?: any) => window.$message?.info(content, options),
-    loading: (content: string, options?: any) => window.$message?.loading(content, options),
+    success: (content: string, options?: MessageOptions) => window.$message?.success(content, options),
+    error: (content: string, options?: MessageOptions) => window.$message?.error(content, options),
+    warning: (content: string, options?: MessageOptions) => window.$message?.warning(content, options),
+    info: (content: string, options?: MessageOptions) => window.$message?.info(content, options),
+    loading: (content: string, options?: MessageOptions) => window.$message?.loading(content, options),
     destroyAll: () => window.$message?.destroyAll()
   };
 
   const $dialog = {
-    success: (options: any) => window.$dialog?.success(options),
-    error: (options: any) => window.$dialog?.error(options),
-    warning: (options: any) => window.$dialog?.warning(options),
-    info: (options: any) => window.$dialog?.info(options),
-    create: (options: any) => window.$dialog?.create(options),
+    success: (options: DialogOptions) => window.$dialog?.success(options),
+    error: (options: DialogOptions) => window.$dialog?.error(options),
+    warning: (options: DialogOptions) => window.$dialog?.warning(options),
+    info: (options: DialogOptions) => window.$dialog?.info(options),
+    create: (options: DialogOptions) => window.$dialog?.create(options),
     destroyAll: () => window.$dialog?.destroyAll()
   };
 
   const $notification = {
-    success: (options: any) => window.$notification?.success(options),
-    error: (options: any) => window.$notification?.error(options),
-    warning: (options: any) => window.$notification?.warning(options),
-    info: (options: any) => window.$notification?.info(options),
-    create: (options: any) => window.$notification?.create(options),
+    success: (options: NotificationOptions) => window.$notification?.success(options),
+    error: (options: NotificationOptions) => window.$notification?.error(options),
+    warning: (options: NotificationOptions) => window.$notification?.warning(options),
+    info: (options: NotificationOptions) => window.$notification?.info(options),
+    create: (options: NotificationOptions) => window.$notification?.create(options),
     destroyAll: () => window.$notification?.destroyAll()
   };
 

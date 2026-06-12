@@ -4,7 +4,7 @@
  * 
  * 提供菜单搜索功能的弹窗界面
  */
-import { computed, ref, shallowRef } from 'vue';
+import { computed, ref, shallowRef, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { onKeyStroke, useDebounceFn } from '@vueuse/core';
 import { useRouteStore } from '@/store/modules/route';
@@ -38,14 +38,24 @@ function search() {
   activePath.value = resultOptions.value[0]?.routePath ?? '';
 }
 
+let closeTimer: ReturnType<typeof setTimeout> | null = null;
+
 function handleClose() {
-  // 使用 setTimeout 防止用户看到一些操作
-  setTimeout(() => {
+  if (closeTimer !== null) return;
+  closeTimer = setTimeout(() => {
     visible.value = false;
     resultOptions.value = [];
     keyword.value = '';
+    closeTimer = null;
   }, 200);
 }
+
+onUnmounted(() => {
+  if (closeTimer !== null) {
+    clearTimeout(closeTimer);
+    closeTimer = null;
+  }
+});
 
 /** 向上键 */
 function handleUp() {

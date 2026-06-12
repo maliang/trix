@@ -4,9 +4,9 @@
  */
 
 import type { JsonNode } from 'vschema-ui';
-import { responseConfig, getValueByPath } from '@/config/response';
 import { get } from '@/service/request';
 import { getBaseUrl } from '@/store/modules/theme/shared';
+import { getHttpErrorStatus } from '@/utils/common';
 
 /**
  * 获取页面 Schema
@@ -33,7 +33,6 @@ export async function fetchSchema(source: string): Promise<JsonNode> {
  */
 async function fetchStaticSchema(path: string): Promise<JsonNode> {
   try {
-    // 添加 VITE_BASE_URL 前缀
     const url = getBaseUrl(path);
     const response = await fetch(url);
     
@@ -46,7 +45,7 @@ async function fetchStaticSchema(path: string): Promise<JsonNode> {
     const schema = await response.json();
     return schema as JsonNode;
   } catch (error) {
-    if (error instanceof Error && (error as any).status) {
+    if (error instanceof Error && getHttpErrorStatus(error)) {
       throw error;
     }
     const message = error instanceof Error ? error.message : '获取 Schema 失败';
@@ -67,8 +66,7 @@ async function fetchApiSchema(url: string): Promise<JsonNode> {
 
   if (error) {
     const err = new Error(`获取 Schema 失败: ${error.message}`);
-    // 从 response 或 error 中提取 HTTP 状态码
-    (err as any).status = response?.status || (error as any).status || null;
+    (err as any).status = response?.status || getHttpErrorStatus(error) || null;
     throw err;
   }
 
@@ -95,34 +93,13 @@ export async function fetchHeaderSchema(source?: string): Promise<JsonNode | nul
   try {
     return await fetchSchema(schemaSource);
   } catch {
-    // Header Schema 获取失败时返回 null，使用默认配置
     return null;
   }
 }
 
-/**
- * 获取菜单 Schema
- * @param source Schema 来源
- * @returns Schema 数据
- */
-export async function fetchMenuSchema(source: string): Promise<JsonNode> {
-  return fetchSchema(source);
-}
-
-/**
- * 获取表单 Schema
- * @param source Schema 来源
- * @returns Schema 数据
- */
-export async function fetchFormSchema(source: string): Promise<JsonNode> {
-  return fetchSchema(source);
-}
-
-/**
- * 获取表格 Schema
- * @param source Schema 来源
- * @returns Schema 数据
- */
-export async function fetchTableSchema(source: string): Promise<JsonNode> {
-  return fetchSchema(source);
-}
+/** @deprecated 直接使用 fetchSchema(source) 即可 */
+export const fetchMenuSchema = fetchSchema;
+/** @deprecated 直接使用 fetchSchema(source) 即可 */
+export const fetchFormSchema = fetchSchema;
+/** @deprecated 直接使用 fetchSchema(source) 即可 */
+export const fetchTableSchema = fetchSchema;

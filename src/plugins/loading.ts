@@ -23,11 +23,23 @@ function getBaseUrl(path: string): string {
 /** 默认应用标题 */
 const DEFAULT_APP_TITLE = 'Trix Admin';
 
+/**
+ * 对用户可控文本进行 HTML 转义，防止 XSS
+ */
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 export function setupLoading() {
   // 从缓存中获取主题设置
   const cachedSettings = localStg.get('themeSettings');
   const logoPath = getBaseUrl(cachedSettings?.logo || '');
-  const appTitle = cachedSettings?.appTitle || DEFAULT_APP_TITLE;
+  const appTitle = escapeHtml(cachedSettings?.appTitle || DEFAULT_APP_TITLE);
   
   const themeColor = localStg.get('themeColor') || '#646cff';
   const darkMode = localStg.get('darkMode') || false;
@@ -42,6 +54,9 @@ export function setupLoading() {
     .join(';');
 
   const cssVars = `${primaryColor}; ${svgCssVars}`;
+
+  // 验证 logo 路径仅允许安全 URL 格式
+  const safeLogoPath = logoPath.match(/^https?:\/\/|\//) ? logoPath : '';
 
   if (darkMode) {
     toggleHtmlClass(DARK_CLASS).add();
@@ -63,7 +78,7 @@ export function setupLoading() {
   const loading = `
 <div class="fixed-center flex-col bg-layout" style="${cssVars}">
   <div class="w-128px h-128px">
-    <img src="${logoPath}" alt="Logo" class="w-full h-full object-contain" />
+    <img src="${safeLogoPath}" alt="Logo" class="w-full h-full object-contain" />
   </div>
   <div class="w-56px h-56px my-36px">
     <div class="relative h-full animate-spin">

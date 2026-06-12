@@ -64,6 +64,14 @@ export interface HeaderNotificationProps {
   enableDetail?: boolean;
   /** 标题前缀字段，用于显示标题前的分类信息，如 'titleWithCategory' */
   titlePrefixField?: string;
+  /** 是否启用轮询，默认 false */
+  enablePolling?: boolean;
+  /** 轮询间隔（毫秒），默认 15000 */
+  pollingInterval?: number;
+  /** 轮询 API 端点 */
+  pollingApi?: string;
+  /** 当前已检查到的最大消息 ID，用于增量拉取新消息 */
+  sinceId?: string | number;
 }
 
 /** 分页响应数据 */
@@ -94,6 +102,18 @@ export interface MarkReadResponse {
   code: number;
   /** 响应消息 */
   message: string;
+}
+
+/** 轮询响应数据 */
+export interface PollResponseData {
+  /** 新消息列表 */
+  messages: NotificationMessage[];
+  /** 未读消息总数 */
+  unread_count: number;
+  /** 是否有新消息 */
+  has_new: boolean;
+  /** 服务器时间 */
+  server_time: string;
 }
 
 /** WebSocket 消息类型 */

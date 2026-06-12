@@ -4,7 +4,7 @@
  * @description 位于 Header 右侧的消息通知入口，使用 NPopover 实现下拉面板，NBadge 显示未读数量
  * @requirements 1.1, 1.2, 1.3, 1.4, 1.5, 2.1
  */
-import { onMounted, computed } from 'vue';
+import { onMounted, onUnmounted, computed } from 'vue';
 import { NBadge, NPopover, NButton } from 'naive-ui';
 import { Icon } from '@iconify/vue';
 import NotificationDropdown from './components/NotificationDropdown.vue';
@@ -17,7 +17,9 @@ const props = withDefaults(defineProps<HeaderNotificationProps>(), {
   enableWs: false,
   enableNotification: true,
   notificationDuration: 4500,
-  enableDetail: true
+  enableDetail: true,
+  enablePolling: false,
+  pollingInterval: 15000
 });
 
 const {
@@ -35,7 +37,10 @@ const {
   markAllAsRead,
   openDetail,
   closeDetail,
-  changeTab
+  changeTab,
+  startPolling,
+  stopPolling,
+  isPolling
 } = useNotification(props);
 
 /**
@@ -84,6 +89,16 @@ function shouldShowBadge(): boolean {
 // 组件挂载时获取消息列表
 onMounted(() => {
   fetchMessages();
+
+  // 如果启用轮询，启动轮询定时器
+  if (props.enablePolling) {
+    startPolling();
+  }
+});
+
+// 组件卸载时停止轮询
+onUnmounted(() => {
+  stopPolling();
 });
 </script>
 

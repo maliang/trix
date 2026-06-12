@@ -33,6 +33,7 @@ import ThemeSchemaSwitch from '@/components/common/theme-schema-switch.vue';
 import GlobalSearch from '@/layouts/modules/global-search/index.vue';
 import ThemeButton from '@/layouts/modules/global-header/components/theme-button.vue';
 import UserAvatar from '@/layouts/modules/global-header/components/user-avatar.vue';
+import HeaderCustomItem from '@/layouts/modules/global-header/components/header-custom-item.vue';
 
 // 高级组件导入
 import TableColumnSetting from '@/components/common/table-column-setting.vue';
@@ -213,6 +214,7 @@ export const customComponents: Record<string, Component> = {
   GlobalSearch,
   ThemeButton,
   UserAvatar,
+  HeaderCustomItem,
   // 高级组件
   TableColumnSetting,
   // JSON 渲染相关组件

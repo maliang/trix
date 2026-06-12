@@ -1,6 +1,7 @@
 import { ref, toValue, watch, type MaybeRefOrGetter, type Ref } from 'vue';
 import type { JsonNode } from 'vschema-ui';
 import { fetchSchema } from '@/service/api';
+import { getHttpErrorStatus } from '@/utils/common';
 
 export interface UseSchemaLoaderOptions {
   /** Schema 来源（静态字符串 / ref / getter）。 */
@@ -93,8 +94,7 @@ export function useSchemaLoader(options: UseSchemaLoaderOptions): UseSchemaLoade
       if (currentId !== requestId) return;
 
       error.value = err.message;
-      // 提取 HTTP 状态码
-      errorStatus.value = (err as any).status || null;
+      errorStatus.value = getHttpErrorStatus(err) || null;
       schema.value = null;
       options.onError?.(err);
     } finally {

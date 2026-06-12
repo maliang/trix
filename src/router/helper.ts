@@ -46,16 +46,6 @@ export function getOpenType(route: RouteLocationNormalized | RouteRecordRaw): 'n
 }
 
 /**
- * 获取路由的 Schema 来源
- * @param route 路由对象
- * @returns Schema 来源地址
- */
-export function getSchemaSource(route: RouteLocationNormalized | RouteRecordRaw): string | undefined {
-  const meta = 'meta' in route ? route.meta : undefined;
-  return meta?.schemaSource;
-}
-
-/**
  * 判断路由是否为登录后默认显示页面
  * @param route 路由对象
  * @returns 是否为默认页面

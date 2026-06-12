@@ -41,3 +41,21 @@ export function toggleHtmlClass(className: string) {
     remove
   };
 }
+
+/**
+ * 从错误对象中提取 HTTP 状态码
+ * 支持 Error、ApiError 以及自定义附加了 status 属性的错误对象
+ * @param err 错误对象
+ * @returns HTTP 状态码或 null
+ */
+export function getHttpErrorStatus(err: unknown): number | null {
+  if (err && typeof err === 'object' && 'status' in err) {
+    const status = (err as Record<string, unknown>).status;
+    if (typeof status === 'number') return status;
+    if (typeof status === 'string') {
+      const parsed = Number(status);
+      if (!isNaN(parsed)) return parsed;
+    }
+  }
+  return null;
+}
