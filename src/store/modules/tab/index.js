@@ -1,0 +1,397 @@
+import { computed, ref, watch } from 'vue';
+import { useEventListener } from '@vueuse/core';
+import { defineStore } from 'pinia';
+import { useThemeStore } from '../theme';
+import { useAuthStore } from '../auth';
+import { useRouteStore } from '../route';
+/** 本地存储的 key */
+const TAB_STORAGE_KEY = 'trix_tabs';
+/**
+ * 标签页 Store
+ * 管理多标签页模式下的标签页状态
+ */
+export const useTabStore = defineStore('tab', () => {
+    // 延迟获取 theme store，避免循环依赖
+    const getThemeStore = () => useThemeStore();
+    const getRouteStore = () => useRouteStore();
+    /** 标签页列表 */
+    const tabs = ref([]);
+    /** 首页标签页 */
+    const homeTab = ref(null);
+    /** 默认显示的标签页（isDefaultAfterLogin: true 的页面） */
+    const defaultTab = ref(null);
+    /** 固定标签页列表（fixedIndexInTab 设置的页面） */
+    const fixedTabs = ref([]);
+    /** 当前激活的标签页 ID */
+    const activeTabId = ref('');
+    /** 所有标签页（包含首页/默认页和固定标签页） */
+    const allTabs = computed(() => {
+        // 按 fixedIndex 排序的固定标签页
+        const sortedFixedTabs = [...fixedTabs.value].sort((a, b) => (a.fixedIndex ?? 0) - (b.fixedIndex ?? 0));
+        // 确定首位标签页：defaultTab 替代 homeTab
+        const firstTab = defaultTab.value || homeTab.value;
+        // 过滤掉已在固定标签页中的普通标签页
+        const fixedIds = new Set(sortedFixedTabs.map(t => t.id));
+        const normalTabs = tabs.value.filter(tab => !fixedIds.has(tab.id));
+        // 首位标签页 + 固定标签页 + 普通标签页
+        const result = [];
+        if (firstTab) {
+            result.push(firstTab);
+        }
+        result.push(...sortedFixedTabs.filter(t => t.id !== firstTab?.id));
+        result.push(...normalTabs.filter(t => t.id !== firstTab?.id));
+        return result;
+    });
+    /**
+     * 设置激活的标签页 ID
+     * @param id 标签页 ID
+     */
+    function setActiveTabId(id) {
+        activeTabId.value = id;
+    }
+    /**
+     * 初始化首页标签页
+     * @param route 首页路由
+     */
+    function initHomeTab(route) {
+        homeTab.value = {
+            id: route.fullPath,
+            label: route.meta.title || '首页',
+            routeKey: route.name,
+            routePath: route.path,
+            fullPath: route.fullPath,
+            icon: route.meta.icon
+        };
+    }
+    /**
+     * 清除首页标签页
+     * 当有 isDefaultAfterLogin 页面时，首页不显示在标签栏
+     */
+    function clearHomeTab() {
+        homeTab.value = null;
+    }
+    /**
+     * 添加默认显示的标签页
+     * 用于处理 isDefaultAfterLogin: true 的页面
+     * 如果有多个，以最后一个为准
+     * @param route 路由信息
+     */
+    function addDefaultTab(route) {
+        const tab = {
+            id: route.fullPath,
+            label: route.meta.title || '',
+            routeKey: route.name,
+            routePath: route.path,
+            fullPath: route.fullPath,
+            icon: route.meta.icon
+        };
+        // 以最后一个为准，直接覆盖
+        defaultTab.value = tab;
+    }
+    /**
+     * 添加固定标签页
+     * 用于处理 fixedIndexInTab 设置的页面
+     * @param route 路由信息
+     */
+    function addFixedTab(route) {
+        const fixedIndex = route.meta.fixedIndexInTab;
+        if (fixedIndex === undefined)
+            return;
+        const tab = {
+            id: route.fullPath,
+            label: route.meta.title || '',
+            routeKey: route.name,
+            routePath: route.path,
+            fullPath: route.fullPath,
+            icon: route.meta.icon,
+            fixedIndex
+        };
+        // 检查是否已存在
+        const existIndex = fixedTabs.value.findIndex(t => t.id === tab.id);
+        if (existIndex !== -1) {
+            // 更新已存在的固定标签页
+            fixedTabs.value[existIndex] = tab;
+        }
+        else {
+            fixedTabs.value.push(tab);
+        }
+    }
+    /**
+     * 初始化标签页 Store
+     * @param currentRoute 当前路由
+     */
+    function initTabStore(currentRoute) {
+        // 先尝试恢复缓存的标签页
+        restoreTabs();
+        // 添加当前路由到标签页
+        addTab(currentRoute);
+    }
+    /**
+     * 添加标签页
+     * @param route 路由信息
+     * @param active 是否激活
+     */
+    function addTab(route, active = true) {
+        const tab = {
+            id: route.fullPath,
+            label: route.meta.title || '',
+            routeKey: route.name,
+            routePath: route.path,
+            fullPath: route.fullPath,
+            icon: route.meta.icon
+        };
+        // 检查是否为首页
+        const isHomeTab = homeTab.value && tab.id === homeTab.value.id;
+        // 如果不是首页且不在标签页列表中，则添加
+        if (!isHomeTab && !tabs.value.some(t => t.id === tab.id)) {
+            tabs.value.push(tab);
+            // 恢复 KeepAlive 缓存（如果之前被移除过）
+            if (tab.routeKey) {
+                getRouteStore().restoreCacheRoute(tab.routeKey);
+            }
+        }
+        if (active) {
+            setActiveTabId(tab.id);
+        }
+    }
+    /**
+     * 移除标签页
+     * @param tabId 标签页 ID
+     */
+    function removeTab(tabId) {
+        // 不能移除首页
+        if (homeTab.value && tabId === homeTab.value.id) {
+            return;
+        }
+        // 不能移除默认显示的标签页（在多标签模式下）
+        if (getThemeStore().tab.visible && isTabRetain(tabId)) {
+            return;
+        }
+        const index = tabs.value.findIndex(tab => tab.id === tabId);
+        if (index !== -1) {
+            // 从 KeepAlive 缓存中移除该路由
+            const tab = tabs.value[index];
+            if (tab.routeKey) {
+                getRouteStore().removeCacheRoute(tab.routeKey);
+            }
+            tabs.value.splice(index, 1);
+        }
+    }
+    /**
+     * 清除所有标签页
+     * @param excludes 排除的标签页 ID 列表
+     */
+    function clearTabs(excludes = []) {
+        // 默认页面、首页、固定标签页不能被清除
+        const retainIds = [
+            defaultTab.value?.id,
+            homeTab.value?.id,
+            ...fixedTabs.value.map(t => t.id),
+            ...excludes
+        ].filter(Boolean);
+        tabs.value = tabs.value.filter(tab => retainIds.includes(tab.id));
+    }
+    /**
+     * 清除左侧标签页
+     * @param tabId 当前标签页 ID
+     */
+    function clearLeftTabs(tabId) {
+        const index = tabs.value.findIndex(tab => tab.id === tabId);
+        if (index === -1)
+            return;
+        const excludes = tabs.value.slice(index).map(tab => tab.id);
+        clearTabs(excludes);
+    }
+    /**
+     * 清除右侧标签页
+     * @param tabId 当前标签页 ID
+     */
+    function clearRightTabs(tabId) {
+        const index = tabs.value.findIndex(tab => tab.id === tabId);
+        if (index === -1)
+            return;
+        const excludes = tabs.value.slice(0, index + 1).map(tab => tab.id);
+        clearTabs(excludes);
+    }
+    /**
+     * 固定标签页
+     * @param tabId 标签页 ID
+     */
+    function fixTab(tabId) {
+        const tab = tabs.value.find(t => t.id === tabId);
+        if (tab) {
+            tab.fixedIndex = tabs.value.filter(t => t.fixedIndex !== undefined).length;
+        }
+    }
+    /**
+     * 取消固定标签页
+     * @param tabId 标签页 ID
+     */
+    function unfixTab(tabId) {
+        const tab = tabs.value.find(t => t.id === tabId);
+        if (tab) {
+            tab.fixedIndex = undefined;
+        }
+    }
+    /**
+     * 判断标签页是否应该保留（不能关闭）
+     * @param tabId 标签页 ID
+     */
+    function isTabRetain(tabId) {
+        // 默认页面（替代首页）不能关闭
+        if (defaultTab.value && tabId === defaultTab.value.id) {
+            return true;
+        }
+        // 首页不能关闭（当没有 defaultTab 时）
+        if (!defaultTab.value && homeTab.value && tabId === homeTab.value.id) {
+            return true;
+        }
+        // 固定标签页不能关闭
+        if (fixedTabs.value.some(t => t.id === tabId)) {
+            return true;
+        }
+        // 手动固定的标签页不能关闭
+        const tab = tabs.value.find(t => t.id === tabId);
+        if (tab && tab.fixedIndex !== undefined) {
+            return true;
+        }
+        return false;
+    }
+    /**
+     * 根据路由获取标签页 ID
+     * 用于 KeepAlive 的 key，需要与组件名称一致才能正确缓存
+     * @param route 路由信息
+     */
+    function getTabIdByRoute(route) {
+        // 使用路由名称作为 key，与 KeepAlive 的 include 匹配
+        return route.name || route.fullPath;
+    }
+    /**
+     * 切换到指定标签页
+     * @param tab 标签页
+     */
+    async function switchRouteByTab(tab) {
+        setActiveTabId(tab.id);
+        // 实际的路由跳转需要在组件中处理
+    }
+    /**
+     * 缓存标签页到本地存储
+     * 只有在已登录状态下才缓存，避免在登录页刷新时覆盖缓存
+     */
+    function cacheTabs() {
+        if (!getThemeStore().tab.cache)
+            return;
+        // 检查是否已登录，未登录时不缓存（避免在登录页刷新时覆盖缓存）
+        try {
+            const authStore = useAuthStore();
+            if (!authStore.isLogin)
+                return;
+        }
+        catch {
+            // store 可能还未初始化，不缓存
+            return;
+        }
+        const cacheData = {
+            tabs: tabs.value,
+            homeTab: homeTab.value,
+            activeTabId: activeTabId.value
+        };
+        try {
+            localStorage.setItem(TAB_STORAGE_KEY, JSON.stringify(cacheData));
+        }
+        catch (e) {
+            console.warn('[TabStore] 缓存标签页失败:', e);
+        }
+    }
+    /**
+     * 从本地存储恢复标签页
+     */
+    function restoreTabs() {
+        if (!getThemeStore().tab.cache)
+            return;
+        try {
+            const cached = localStorage.getItem(TAB_STORAGE_KEY);
+            if (cached) {
+                const cacheData = JSON.parse(cached);
+                if (cacheData.tabs?.length) {
+                    tabs.value = cacheData.tabs;
+                }
+                if (cacheData.homeTab) {
+                    homeTab.value = cacheData.homeTab;
+                }
+                if (cacheData.activeTabId) {
+                    activeTabId.value = cacheData.activeTabId;
+                }
+            }
+        }
+        catch (e) {
+            console.warn('[TabStore] 恢复标签页失败:', e);
+        }
+    }
+    /**
+     * 清除缓存的标签页
+     */
+    function clearCachedTabs() {
+        try {
+            localStorage.removeItem(TAB_STORAGE_KEY);
+        }
+        catch (e) {
+            // 忽略错误
+        }
+    }
+    /**
+     * 获取登录后的默认显示页面
+     * 返回最后一个设置 isDefaultAfterLogin 的页面
+     */
+    function getDefaultPageAfterLogin() {
+        return defaultTab.value;
+    }
+    /**
+     * 初始化登录后的默认标签页
+     * 在登录成功后调用
+     */
+    function initDefaultTabsAfterLogin() {
+        // 添加所有固定标签页
+        fixedTabs.value.forEach(tab => {
+            if (!tabs.value.some(t => t.id === tab.id)) {
+                tabs.value.push(tab);
+            }
+        });
+    }
+    // 页面关闭或刷新时缓存标签页
+    useEventListener(window, 'beforeunload', () => {
+        cacheTabs();
+    });
+    // 监听标签页变化，自动缓存
+    watch([tabs, activeTabId], () => {
+        cacheTabs();
+    }, { deep: true });
+    return {
+        tabs: allTabs,
+        homeTab,
+        defaultTab,
+        fixedTabs,
+        activeTabId,
+        setActiveTabId,
+        initHomeTab,
+        clearHomeTab,
+        addDefaultTab,
+        addFixedTab,
+        initTabStore,
+        addTab,
+        removeTab,
+        clearTabs,
+        clearLeftTabs,
+        clearRightTabs,
+        fixTab,
+        unfixTab,
+        isTabRetain,
+        getTabIdByRoute,
+        switchRouteByTab,
+        cacheTabs,
+        restoreTabs,
+        clearCachedTabs,
+        getDefaultPageAfterLogin,
+        initDefaultTabsAfterLogin
+    };
+});

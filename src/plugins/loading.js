@@ -1,0 +1,80 @@
+// @unocss-include
+import { getColorPalette, getRgb } from '@trix/color';
+import { DARK_CLASS } from '@/config/constants';
+import { localStg } from '@/utils/storage';
+import { toggleHtmlClass } from '@/utils/common';
+/** 默认 Logo 图片路径 */
+const BASE_URL = import.meta.env.VITE_BASE_URL || '/';
+const DEFAULT_LOGO = `${BASE_URL}favicon.svg`;
+/** 获取带 base URL 的路径 */
+function getBaseUrl(path) {
+    if (!path)
+        return DEFAULT_LOGO;
+    // 如果路径已经是完整 URL 或已包含 base，直接返回
+    if (path.startsWith('http') || path.startsWith(BASE_URL)) {
+        return path;
+    }
+    // 移除路径开头的 /，然后拼接 base
+    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+    return `${BASE_URL}${cleanPath}`;
+}
+/** 默认应用标题 */
+const DEFAULT_APP_TITLE = 'Trix Admin';
+/**
+ * 对用户可控文本进行 HTML 转义，防止 XSS
+ */
+function escapeHtml(str) {
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+export function setupLoading() {
+    // 从缓存中获取主题设置
+    const cachedSettings = localStg.get('themeSettings');
+    const logoPath = getBaseUrl(cachedSettings?.logo || '');
+    const appTitle = escapeHtml(cachedSettings?.appTitle || DEFAULT_APP_TITLE);
+    const themeColor = localStg.get('themeColor') || '#646cff';
+    const darkMode = localStg.get('darkMode') || false;
+    const palette = getColorPalette(themeColor);
+    const { r, g, b } = getRgb(themeColor);
+    const primaryColor = `--primary-color: ${r} ${g} ${b}`;
+    const svgCssVars = Array.from(palette.entries())
+        .map(([key, value]) => `--logo-color-${key}: ${value}`)
+        .join(';');
+    const cssVars = `${primaryColor}; ${svgCssVars}`;
+    // 验证 logo 路径仅允许安全 URL 格式
+    const safeLogoPath = logoPath.match(/^https?:\/\/|\//) ? logoPath : '';
+    if (darkMode) {
+        toggleHtmlClass(DARK_CLASS).add();
+    }
+    const loadingClasses = [
+        'left-0 top-0',
+        'left-0 bottom-0 animate-delay-500',
+        'right-0 top-0 animate-delay-1000',
+        'right-0 bottom-0 animate-delay-1500'
+    ];
+    const dot = loadingClasses
+        .map(item => {
+        return `<div class="absolute w-16px h-16px bg-primary rounded-8px animate-pulse ${item}"></div>`;
+    })
+        .join('\n');
+    const loading = `
+<div class="fixed-center flex-col bg-layout" style="${cssVars}">
+  <div class="w-128px h-128px">
+    <img src="${safeLogoPath}" alt="Logo" class="w-full h-full object-contain" />
+  </div>
+  <div class="w-56px h-56px my-36px">
+    <div class="relative h-full animate-spin">
+      ${dot}
+    </div>
+  </div>
+  <h2 class="text-28px font-500 text-primary">${appTitle}</h2>
+</div>`;
+    const app = document.getElementById('app');
+    if (app) {
+        app.innerHTML = loading;
+    }
+}
