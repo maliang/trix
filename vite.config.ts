@@ -14,6 +14,7 @@ export default defineConfig(configEnv => {
   return {
     base: viteEnv.VITE_BASE_URL,
     resolve: {
+      extensions: ['.ts', '.tsx', '.vue', '.mjs', '.js', '.mts', '.jsx', '.json'],
       alias: {
         '~': fileURLToPath(new URL('./', import.meta.url)),
         '@': fileURLToPath(new URL('./src', import.meta.url))

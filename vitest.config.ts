@@ -5,6 +5,7 @@ import { fileURLToPath, URL } from 'node:url';
 export default defineConfig({
   plugins: [vue() as any],
   resolve: {
+    extensions: ['.ts', '.tsx', '.vue', '.mjs', '.js', '.mts', '.jsx', '.json'],
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       '~': fileURLToPath(new URL('./', import.meta.url))

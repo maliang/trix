@@ -16,11 +16,13 @@ const themeStore = useThemeStore();
 const naiveDarkTheme = computed(() => (themeStore.darkMode ? darkTheme : undefined));
 
 const naiveLocale = computed(() => {
-  return naiveLocales[appStore.locale];
+  const baseLocale = appStore.localeOptions.find(item => item.key === appStore.locale)?.naiveLocale || 'en-US';
+  return naiveLocales[baseLocale] || naiveLocales['en-US'];
 });
 
 const naiveDateLocale = computed(() => {
-  return naiveDateLocales[appStore.locale];
+  const baseLocale = appStore.localeOptions.find(item => item.key === appStore.locale)?.naiveLocale || 'en-US';
+  return naiveDateLocales[baseLocale] || naiveDateLocales['en-US'];
 });
 
 const watermarkProps = computed<WatermarkProps>(() => {

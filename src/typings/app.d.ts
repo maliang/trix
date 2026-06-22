@@ -6,12 +6,13 @@ declare namespace App {
   /** 国际化命名空间 */
   namespace I18n {
     /** 语言类型 */
-    type LangType = 'zh-CN' | 'en-US';
+    type LangType = string;
 
     /** 语言选项 */
     interface LangOption {
       label: string;
       key: LangType;
+      naiveLocale?: 'zh-CN' | 'en-US';
     }
   }
 

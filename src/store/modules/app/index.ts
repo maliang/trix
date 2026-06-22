@@ -3,6 +3,8 @@ import { ref, watch, effectScope, onScopeDispose, nextTick } from 'vue';
 import { breakpointsTailwind, useBreakpoints, useEventListener } from '@vueuse/core';
 import { useBoolean } from '@trix/hooks';
 import { useThemeStore } from '../theme';
+import i18n, { setI18nLocale } from '@/locales';
+import { getBackendConfig } from '@/config/backend';
 
 export const useAppStore = defineStore('app', () => {
   // 延迟获取 theme store，避免循环依赖
@@ -32,12 +34,12 @@ export const useAppStore = defineStore('app', () => {
   const isMobile = breakpoints.smaller('sm');
 
   /** 当前语言 */
-  const locale = ref<App.I18n.LangType>('zh-CN');
+  const locale = ref<App.I18n.LangType>(i18n.global.locale.value as App.I18n.LangType);
 
   /** 语言选项 */
-  const localeOptions: App.I18n.LangOption[] = [
-    { label: '中文', key: 'zh-CN' },
-    { label: 'English', key: 'en-US' }
+  const localeOptions: App.I18n.LangOption[] = getBackendConfig().languages || [
+    { label: '中文', key: 'zh-CN', naiveLocale: 'zh-CN' },
+    { label: 'English', key: 'en-US', naiveLocale: 'en-US' }
   ];
 
   /**
@@ -57,6 +59,12 @@ export const useAppStore = defineStore('app', () => {
    */
   function changeLocale(lang: App.I18n.LangType) {
     locale.value = lang;
+    setI18nLocale(lang);
+    try {
+      localStorage.setItem('trix-locale', lang);
+    } catch {
+      // Storage can be unavailable in privacy-restricted environments.
+    }
   }
 
   // 监听 store

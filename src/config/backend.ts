@@ -10,6 +10,14 @@ export interface BackendConfig {
   appTitle: string;
   /** Logo */
   logo?: string;
+  /** 默认语言 */
+  locale?: App.I18n.LangType;
+  /** 回退语言 */
+  fallbackLocale?: App.I18n.LangType;
+  /** 后端声明的可用语言 */
+  languages?: App.I18n.LangOption[];
+  /** 翻译资源接口 */
+  translationsUrl?: string;
 }
 
 declare global {
@@ -33,6 +41,13 @@ export function getBackendConfig(): BackendConfig {
   return {
     apiPrefix: import.meta.env.VITE_SERVICE_BASE_URL || '/api/admin',
     appTitle: 'Lartrix Admin',
+    locale: 'zh-CN',
+    fallbackLocale: 'en-US',
+    languages: [
+      { label: '中文', key: 'zh-CN', naiveLocale: 'zh-CN' },
+      { label: 'English', key: 'en-US', naiveLocale: 'en-US' }
+    ],
+    translationsUrl: '/translations'
   };
 }
 
