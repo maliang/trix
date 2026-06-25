@@ -42,6 +42,7 @@ import TableColumnSetting from '@/components/common/table-column-setting.vue';
 import SchemaEditor from '@/components/json/SchemaEditor.vue';
 import ErrorBoundary from '@/components/json/ErrorBoundary.vue';
 import JsonDataTable from '@/components/json/JsonDataTable.vue';
+import { AuthUpload } from './upload-auth';
 
 // 业务组件导入
 import { IconPicker } from '@/components/business/icon-picker';
@@ -242,6 +243,8 @@ export function getNaiveUIComponents(): Record<string, Component> {
       components[name] = component as Component;
     }
   }
+
+  components.NUpload = AuthUpload;
 
   return components;
 }
