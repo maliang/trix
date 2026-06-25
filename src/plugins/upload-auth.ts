@@ -1,39 +1,21 @@
 import { defineComponent, h, useAttrs } from 'vue';
 import { NUpload } from 'naive-ui';
 import { jsonRendererConfig } from '@/config/json-renderer';
-import { localStg } from '@/utils/storage';
+import {
+  buildJsonRendererAuthHeaders,
+  type JsonRendererAuthConfig,
+  type JsonRendererHeaders
+} from './json-renderer-auth';
 
-interface UploadAuthConfig {
-  withToken: boolean;
-  tokenHeaderName: string;
-  tokenPrefix?: string;
-}
-
-type UploadHeaders = Record<string, string>;
+type UploadAuthConfig = JsonRendererAuthConfig;
+type UploadHeaders = JsonRendererHeaders;
 
 export function buildUploadHeaders(
   headers: UploadHeaders | undefined,
-  getToken: () => string | null | undefined = () => localStg.get('token'),
+  getToken?: () => string | null | undefined,
   config: UploadAuthConfig = jsonRendererConfig
 ): UploadHeaders {
-  const explicitHeaders = { ...(headers || {}) };
-
-  if (!config.withToken) {
-    return explicitHeaders;
-  }
-
-  const token = getToken();
-  if (!token) {
-    return explicitHeaders;
-  }
-
-  const headerName = config.tokenHeaderName || 'Authorization';
-  const prefix = config.tokenPrefix || '';
-
-  return {
-    [headerName]: prefix ? `${prefix}${token}` : token,
-    ...explicitHeaders
-  };
+  return buildJsonRendererAuthHeaders(headers, config, getToken);
 }
 
 export const AuthUpload = defineComponent({

@@ -8,7 +8,6 @@ import { createVSchemaPlugin, type RequestConfig as RendererRequestConfig } from
 import * as NaiveUI from 'naive-ui';
 import { Icon } from '@iconify/vue';
 import { jsonRendererConfig } from '@/config/json-renderer';
-import { localStg } from '@/utils/storage';
 
 // 自定义组件导入
 import SvgIcon from '@/components/custom/svg-icon.vue';
@@ -42,6 +41,7 @@ import TableColumnSetting from '@/components/common/table-column-setting.vue';
 import SchemaEditor from '@/components/json/SchemaEditor.vue';
 import ErrorBoundary from '@/components/json/ErrorBoundary.vue';
 import JsonDataTable from '@/components/json/JsonDataTable.vue';
+import { buildJsonRendererAuthHeaders } from './json-renderer-auth';
 import { AuthUpload } from './upload-auth';
 
 // 业务组件导入
@@ -278,16 +278,8 @@ export function setupJsonRenderer(app: App): void {
     responseFormat: jsonRendererConfig.responseFormat,
     // 统一鉴权：让 schema 内的 fetch/initApi/uiApi 等请求也能自动携带 token（令牌）
     requestInterceptor: (config: RendererRequestConfig) => {
-      const next: RendererRequestConfig = { ...config, headers: { ...(config.headers || {}) } };
-
-      if (jsonRendererConfig.withToken) {
-        const token = localStg.get('token');
-        if (token) {
-          const headerName = jsonRendererConfig.tokenHeaderName || 'Authorization';
-          const prefix = jsonRendererConfig.tokenPrefix || '';
-          next.headers[headerName] = prefix ? `${prefix}${token}` : token;
-        }
-      }
+      const next: RendererRequestConfig = { ...config };
+      next.headers = buildJsonRendererAuthHeaders(config.headers as Record<string, string> | undefined);
 
       return next;
     },
