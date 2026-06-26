@@ -2,7 +2,7 @@
  * 路由守卫
  * 处理路由跳转前后的逻辑，包括认证、权限、布局等
  */
-import type { Router, RouteLocationNormalized, NavigationGuardNext } from 'vue-router';
+import type { Router, RouteLocationNormalized, NavigationGuardNext, RouteLocationRaw } from 'vue-router';
 import {
   isAuthRequired,
   getLayoutType,
@@ -208,6 +208,15 @@ function setPageTitle(to: RouteLocationNormalized) {
   }
 }
 
+export function buildAuthRouteReloadLocation(to: RouteLocationNormalized): RouteLocationRaw {
+  return {
+    path: to.path,
+    query: to.query,
+    hash: to.hash,
+    replace: true
+  };
+}
+
 /**
  * 路由前置守卫
  */
@@ -226,7 +235,7 @@ async function beforeEachGuard(
   if (loggedIn && !isAuthRouteInitialized?.()) {
     await initAuthRoute?.();
     // 重新导航到目标路由（此时动态路由已加载）
-    next({ ...to, replace: true });
+    next(buildAuthRouteReloadLocation(to));
     return;
   }
 
