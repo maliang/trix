@@ -1,6 +1,7 @@
 // @unocss-include
 import { getColorPalette, getRgb } from '@trix/color';
 import { DARK_CLASS } from '@/config/constants';
+import { getBackendConfig } from '@/config/backend';
 import { localStg } from '@/utils/storage';
 import { toggleHtmlClass } from '@/utils/common';
 
@@ -36,10 +37,11 @@ function escapeHtml(str: string): string {
 }
 
 export function setupLoading() {
+  const backendConfig = getBackendConfig();
   // 从缓存中获取主题设置
   const cachedSettings = localStg.get('themeSettings');
-  const logoPath = getBaseUrl(cachedSettings?.logo || '');
-  const appTitle = escapeHtml(cachedSettings?.appTitle || DEFAULT_APP_TITLE);
+  const logoPath = getBaseUrl(cachedSettings?.logo || backendConfig.logo || '');
+  const appTitle = escapeHtml(cachedSettings?.appTitle || backendConfig.appTitle || DEFAULT_APP_TITLE);
   
   const themeColor = localStg.get('themeColor') || '#646cff';
   const darkMode = localStg.get('darkMode') || false;
