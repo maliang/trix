@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
-import { resolveMenuBadgeCount, transformMenuRoutesToRoutes } from '@/store/modules/route/shared';
+import { createMenuBadgeExtra, resolveMenuBadgeCount, transformMenuRoutesToRoutes } from '@/store/modules/route/shared';
 import { useNotificationStore } from '@/store/modules/notification';
 import type { NotificationMessage } from '@/components/common/header-notification/types';
 import { resolveNotificationBadgeCount } from '@/service/notification/badge';
@@ -65,6 +65,20 @@ describe('menu badge - notification source', () => {
       source: 'notification',
       types: ['approval.contract'],
       max: 9
+    });
+  });
+
+  it('renders custom badge color from badge.color', () => {
+    const render = createMenuBadgeExtra({
+      source: 'static',
+      value: 3,
+      color: '#f5222d'
+    });
+
+    const vnode = render?.() as any;
+
+    expect(vnode?.props?.style).toEqual({
+      '--n-badge-color': '#f5222d'
     });
   });
 });

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, resolveComponent } from 'vue';
+import { computed, onMounted, ref, resolveComponent } from 'vue';
 import { NBadge, NButton, NTooltip } from 'naive-ui';
 import { Icon } from '@iconify/vue';
 import { get } from '@/service/request';
@@ -11,12 +11,8 @@ interface Props {
   icon?: string;
   /** 鼠标悬停提示 */
   tooltip?: string;
-  /** 徽标计数 API */
-  badgeApi?: string;
   /** 徽标配置：可绑定通知未读数 */
   badge?: Api.Route.MenuBadgeConfig;
-  /** 徽标颜色 */
-  badgeColor?: string;
   /** 点击行为类型 */
   click?: 'link' | 'modal' | 'drawer' | 'none';
   /** 点击目标 */
@@ -34,33 +30,18 @@ const props = withDefaults(defineProps<Props>(), {
 
 const VSchema = resolveComponent('VSchema');
 
-/** 徽标计数 */
-const badgeCount = ref(0);
-/** badgeApi 轮询定时器 */
-const badgeTimer = ref<ReturnType<typeof setInterval> | null>(null);
 /** Schema 模式：由 API 返回的 schema 节点 */
 const schemaNode = ref<JsonNode | null>(null);
 /** 是否为 Schema 渲染模式 */
 const isSchemaMode = ref(false);
 /** 最终徽标数量 */
-const resolvedBadgeCount = computed(() => (props.badge ? resolveNotificationBadgeCount(props.badge) : badgeCount.value));
+const resolvedBadgeCount = computed(() => resolveNotificationBadgeCount(props.badge));
 /** 最终徽标模式 */
 const resolvedBadgeMode = computed(() => props.badge?.mode || 'count');
 /** 是否显示徽标 */
 const shouldShowBadge = computed(() => Boolean(props.badge?.showZero) || resolvedBadgeCount.value > 0);
-
-/** 加载徽标数 */
-async function loadBadge() {
-  if (!props.badgeApi || isSchemaMode.value) return;
-  try {
-    const { data } = await get<{ count: number }>(props.badgeApi);
-    if (data && typeof data.count === 'number') {
-      badgeCount.value = data.count;
-    }
-  } catch {
-    // 静默失败
-  }
-}
+/** 最终徽标样式 */
+const resolvedBadgeStyle = computed(() => (props.badge?.color ? { '--n-badge-color': props.badge.color } : {}));
 
 /** 加载 Schema（高级模式） */
 async function loadSchema() {
@@ -86,18 +67,6 @@ function handleClick() {
 onMounted(() => {
   if (props.schemaApi) {
     loadSchema();
-  } else {
-    loadBadge();
-    if (props.badgeApi && !props.badge) {
-      badgeTimer.value = setInterval(loadBadge, 30000);
-    }
-  }
-});
-
-onUnmounted(() => {
-  if (badgeTimer.value) {
-    clearInterval(badgeTimer.value);
-    badgeTimer.value = null;
   }
 });
 </script>
@@ -117,7 +86,7 @@ onUnmounted(() => {
               :dot="resolvedBadgeMode === 'dot'"
               :max="badge?.max ?? 99"
               :show="shouldShowBadge"
-              :style="badgeColor ? { '--n-badge-color': badgeColor } : {}"
+              :style="resolvedBadgeStyle"
             >
               <Icon :icon="icon" width="20" height="20" />
             </NBadge>
@@ -133,7 +102,7 @@ onUnmounted(() => {
           :dot="resolvedBadgeMode === 'dot'"
           :max="badge?.max ?? 99"
           :show="shouldShowBadge"
-          :style="badgeColor ? { '--n-badge-color': badgeColor } : {}"
+          :style="resolvedBadgeStyle"
         >
           <Icon :icon="icon" width="20" height="20" />
         </NBadge>

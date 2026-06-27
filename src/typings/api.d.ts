@@ -95,6 +95,8 @@ declare namespace Api {
       max?: number;
       /** 数量为 0 时是否仍显示 */
       showZero?: boolean;
+      /** 徽标颜色，支持任意 CSS 颜色值 */
+      color?: string;
     }
 
     /** 用户路由 */

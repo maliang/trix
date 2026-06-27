@@ -80,7 +80,8 @@ export function createMenuBadgeExtra(badge?: Api.Route.MenuBadgeConfig): (() => 
       dot: mode === 'dot',
       value: mode === 'dot' ? undefined : count,
       max: badge.max ?? 99,
-      show
+      show,
+      style: badge.color ? { '--n-badge-color': badge.color } : undefined
     });
   };
 }
