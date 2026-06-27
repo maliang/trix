@@ -8,6 +8,7 @@ import { useAuthStore } from './store/modules/auth';
 import { useRouteStore } from './store/modules/route';
 import { getBackendConfig } from './config/backend';
 import { useNotificationRealtime } from './service/notification';
+import { useAudioUnlock } from './service/audio/unlock';
 import App from './App.vue';
 
 async function setupApp() {
@@ -18,6 +19,8 @@ async function setupApp() {
   setupIconifyOffline();
 
   setupDayjs();
+
+  useAudioUnlock().install();
 
   const app = createApp(App);
 

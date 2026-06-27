@@ -81,4 +81,41 @@ describe('menu badge - notification source', () => {
       '--n-badge-color': '#f5222d'
     });
   });
+
+  it('uses server unread counts so badge totals are not limited by paged messages', () => {
+    const notificationStore = useNotificationStore();
+    notificationStore.setMessages([
+      createMessage('1', 'approval.contract'),
+      createMessage('2', 'task.todo')
+    ]);
+    notificationStore.setUnreadCounts(25, {
+      'approval.contract': 12,
+      'task.todo': 8,
+      'system.notice': 5
+    });
+
+    expect(resolveMenuBadgeCount({ source: 'notification' })).toBe(25);
+    expect(resolveMenuBadgeCount({
+      source: 'notification',
+      types: ['approval.contract', 'task.todo']
+    })).toBe(20);
+  });
+
+  it('optimistically decreases server unread counts when a loaded message is marked read', () => {
+    const notificationStore = useNotificationStore();
+    notificationStore.setMessages([
+      createMessage('1', 'approval.contract')
+    ]);
+    notificationStore.setUnreadCounts(12, {
+      'approval.contract': 3
+    });
+
+    notificationStore.markAsRead('1');
+
+    expect(resolveMenuBadgeCount({ source: 'notification' })).toBe(11);
+    expect(resolveMenuBadgeCount({
+      source: 'notification',
+      types: ['approval.contract']
+    })).toBe(2);
+  });
 });

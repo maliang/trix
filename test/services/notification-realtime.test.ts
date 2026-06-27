@@ -80,6 +80,40 @@ describe('notification realtime service', () => {
     service.stop();
   });
 
+  it('refreshes server unread counts for badges without relying on paged messages', async () => {
+    const fetcher = vi.fn().mockResolvedValue({
+      messages: [],
+      unread_count: 7,
+      unread_count_by_type: {
+        'audit.pending': 4,
+        'task.todo': 3
+      },
+      has_new: false,
+      server_time: '2026-06-28T00:00:01.000Z'
+    });
+    const service = useNotificationRealtime();
+    const store = useNotificationStore();
+
+    service.configure({
+      enabled: true,
+      driver: 'polling',
+      polling: {
+        api: '/notifications/poll',
+        interval: 1500
+      }
+    });
+    service.setPollFetcher(fetcher);
+
+    await service.refresh();
+
+    expect(fetcher).toHaveBeenCalledWith('/notifications/poll', { since_id: 0 });
+    expect(store.unreadCount).toBe(7);
+    expect(store.unreadCountByType).toEqual({
+      'audit.pending': 4,
+      'task.todo': 3
+    });
+  });
+
   it('runs configured behavior actions once per new message and repeats sound action', async () => {
     const fetcher = vi.fn().mockResolvedValue({
       messages: [

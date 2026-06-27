@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, resolveComponent } from 'vue';
 import { NBadge, NButton, NTooltip } from 'naive-ui';
 import { Icon } from '@iconify/vue';
+import { useRouter } from 'vue-router';
 import { get } from '@/service/request';
 import type { JsonNode } from 'vschema-ui';
 import { resolveNotificationBadgeCount } from '@/service/notification/badge';
@@ -14,9 +15,11 @@ interface Props {
   /** 徽标配置：可绑定通知未读数 */
   badge?: Api.Route.MenuBadgeConfig;
   /** 点击行为类型 */
-  click?: 'link' | 'modal' | 'drawer' | 'none';
+  click?: 'route' | 'link' | 'modal' | 'drawer' | 'none';
   /** 点击目标 */
   clickTarget?: string;
+  /** link 模式下的打开目标 */
+  target?: '_blank' | '_self' | string;
   /** Schema API 地址（高级模式：返回任意 schema 节点完全控制渲染） */
   schemaApi?: string;
 }
@@ -29,6 +32,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const VSchema = resolveComponent('VSchema');
+const router = useRouter();
 
 /** Schema 模式：由 API 返回的 schema 节点 */
 const schemaNode = ref<JsonNode | null>(null);
@@ -58,9 +62,21 @@ async function loadSchema() {
 }
 
 /** 点击处理（简单模式） */
-function handleClick() {
-  if (props.click === 'link' && props.clickTarget) {
-    window.open(props.clickTarget, '_blank');
+async function handleClick() {
+  if (!props.clickTarget) return;
+
+  if (props.click === 'route') {
+    await router.push(props.clickTarget);
+    return;
+  }
+
+  if (props.click === 'link') {
+    const target = props.target || '_blank';
+    if (target === '_self') {
+      window.location.href = props.clickTarget;
+      return;
+    }
+    window.open(props.clickTarget, target);
   }
 }
 

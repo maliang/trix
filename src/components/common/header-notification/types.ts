@@ -98,6 +98,8 @@ export interface PollResponseData {
   messages: NotificationMessage[];
   /** 未读消息总数 */
   unread_count: number;
+  /** 按消息类型统计的未读数量 */
+  unread_count_by_type?: Record<string, number>;
   /** 是否有新消息 */
   has_new: boolean;
   /** 服务器时间 */

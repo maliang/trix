@@ -33,13 +33,27 @@ export const useNotificationStore = defineStore('notification', () => {
   /** 标签页类型映射（key -> types） */
   const tabTypesMap = ref<Record<string, string[] | undefined>>({});
 
+  /** 服务端聚合未读总数（避免分页列表导致 badge 少算） */
+  const serverUnreadCount = ref(0);
+
+  /** 服务端按类型聚合的未读数量 */
+  const serverUnreadCountByType = ref<Record<string, number>>({});
+
+  /** 是否已经拿到服务端聚合未读数量 */
+  const hasServerUnreadCounts = ref(false);
+
   // ==================== 计算属性 ====================
 
   /** 未读消息总数 */
-  const unreadCount = computed(() => messages.value.filter(m => !m.isRead).length);
+  const unreadCount = computed(() => {
+    if (hasServerUnreadCounts.value) return serverUnreadCount.value;
+    return messages.value.filter(m => !m.isRead).length;
+  });
 
   /** 按类型统计未读数量 */
   const unreadCountByType = computed(() => {
+    if (hasServerUnreadCounts.value) return serverUnreadCountByType.value;
+
     const counts: Record<string, number> = {};
     messages.value.forEach(m => {
       if (!m.isRead) {
@@ -98,8 +112,9 @@ export const useNotificationStore = defineStore('notification', () => {
    */
   function markAsRead(id: string) {
     const message = messages.value.find(m => m.id === id);
-    if (message) {
+    if (message && !message.isRead) {
       message.isRead = true;
+      decreaseUnreadCounts([message.type]);
     }
   }
 
@@ -113,6 +128,56 @@ export const useNotificationStore = defineStore('notification', () => {
         m.isRead = true;
       }
     });
+    clearUnreadCounts(types);
+  }
+
+  /**
+   * 设置服务端聚合未读数量
+   */
+  function setUnreadCounts(totalCount: number, byType: Record<string, number> = {}) {
+    serverUnreadCount.value = Math.max(Number(totalCount) || 0, 0);
+    serverUnreadCountByType.value = { ...byType };
+    hasServerUnreadCounts.value = true;
+  }
+
+  function decreaseUnreadCounts(types: string[]) {
+    if (!hasServerUnreadCounts.value) return;
+
+    serverUnreadCount.value = Math.max(serverUnreadCount.value - types.length, 0);
+    const next = { ...serverUnreadCountByType.value };
+    types.forEach(type => {
+      next[type] = Math.max((next[type] || 0) - 1, 0);
+    });
+    serverUnreadCountByType.value = next;
+  }
+
+  function increaseUnreadCounts(types: string[]) {
+    if (!hasServerUnreadCounts.value) return;
+
+    serverUnreadCount.value += types.length;
+    const next = { ...serverUnreadCountByType.value };
+    types.forEach(type => {
+      next[type] = (next[type] || 0) + 1;
+    });
+    serverUnreadCountByType.value = next;
+  }
+
+  function clearUnreadCounts(types?: string[]) {
+    if (!hasServerUnreadCounts.value) return;
+
+    if (!types || types.length === 0) {
+      serverUnreadCount.value = 0;
+      serverUnreadCountByType.value = {};
+      return;
+    }
+
+    const next = { ...serverUnreadCountByType.value };
+    const removed = types.reduce((sum, type) => sum + (next[type] || 0), 0);
+    types.forEach(type => {
+      next[type] = 0;
+    });
+    serverUnreadCount.value = Math.max(serverUnreadCount.value - removed, 0);
+    serverUnreadCountByType.value = next;
   }
 
   /**
@@ -169,6 +234,9 @@ export const useNotificationStore = defineStore('notification', () => {
     currentPage.value = 1;
     total.value = 0;
     hasMore.value = true;
+    serverUnreadCount.value = 0;
+    serverUnreadCountByType.value = {};
+    hasServerUnreadCounts.value = false;
   }
 
   /**
@@ -190,6 +258,9 @@ export const useNotificationStore = defineStore('notification', () => {
     hasMore,
     activeTab,
     tabTypesMap,
+    serverUnreadCount,
+    serverUnreadCountByType,
+    hasServerUnreadCounts,
     // 计算属性
     unreadCount,
     unreadCountByType,
@@ -199,6 +270,8 @@ export const useNotificationStore = defineStore('notification', () => {
     setMessages,
     markAsRead,
     markAllAsRead,
+    setUnreadCounts,
+    increaseUnreadCounts,
     setLoading,
     setPagination,
     setActiveTab,

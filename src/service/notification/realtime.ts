@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue';
 import { get } from '@/service/request';
 import { useNotificationStore } from '@/store/modules/notification';
+import { useAudioUnlock } from '@/service/audio/unlock';
 import type { NotificationMessage, PollResponseData } from '@/components/common/header-notification/types';
 
 export type NotificationRealtimeDriver = 'polling' | 'ws';
@@ -107,8 +108,7 @@ function getActionNumber(action: NotificationBehaviorAction, key: string): numbe
 }
 
 async function defaultAudioPlayer(src: string): Promise<void> {
-  const audio = new Audio(src);
-  await audio.play();
+  await useAudioUnlock().play(src);
 }
 
 function createNotificationRealtime() {
@@ -204,9 +204,13 @@ function createNotificationRealtime() {
     }
   }
 
-  async function handleMessage(message: NotificationMessage): Promise<void> {
+  async function handleMessage(message: NotificationMessage, updateUnreadCounts = true): Promise<void> {
     const store = useNotificationStore();
     store.addMessage(message);
+
+    if (updateUnreadCounts && !message.isRead) {
+      store.increaseUnreadCounts([message.type]);
+    }
 
     const id = Number(message.id);
     if (Number.isFinite(id) && id > maxMessageId) {
@@ -218,9 +222,13 @@ function createNotificationRealtime() {
   }
 
   async function handlePollResult(response: PollResponseData | null): Promise<void> {
+    if (response) {
+      useNotificationStore().setUnreadCounts(response.unread_count, response.unread_count_by_type || {});
+    }
+
     if (!response?.has_new || !response.messages?.length) return;
     for (const message of response.messages) {
-      await handleMessage(message);
+      await handleMessage(message, false);
     }
   }
 
@@ -234,6 +242,10 @@ function createNotificationRealtime() {
 
     const response = await pollFetcher(api, { since_id: maxMessageId });
     await handlePollResult(response);
+  }
+
+  async function refresh(): Promise<void> {
+    await pollOnce();
   }
 
   function startPolling(): void {
@@ -320,6 +332,7 @@ function createNotificationRealtime() {
     setBehaviorAudioPlayer,
     registerBehaviorAction,
     pollOnce,
+    refresh,
     start,
     stop
   };
