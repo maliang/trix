@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted, resolveComponent } from 'vue';
+import { computed, onMounted, onUnmounted, ref, resolveComponent } from 'vue';
 import { NBadge, NButton, NTooltip } from 'naive-ui';
 import { Icon } from '@iconify/vue';
 import { get } from '@/service/request';
 import type { JsonNode } from 'vschema-ui';
+import { resolveNotificationBadgeCount } from '@/service/notification/badge';
 
 interface Props {
   /** Iconify 图标名（简单图标按钮模式） */
@@ -12,6 +13,8 @@ interface Props {
   tooltip?: string;
   /** 徽标计数 API */
   badgeApi?: string;
+  /** 徽标配置：可绑定通知未读数 */
+  badge?: Api.Route.MenuBadgeConfig;
   /** 徽标颜色 */
   badgeColor?: string;
   /** 点击行为类型 */
@@ -33,10 +36,18 @@ const VSchema = resolveComponent('VSchema');
 
 /** 徽标计数 */
 const badgeCount = ref(0);
+/** badgeApi 轮询定时器 */
+const badgeTimer = ref<ReturnType<typeof setInterval> | null>(null);
 /** Schema 模式：由 API 返回的 schema 节点 */
 const schemaNode = ref<JsonNode | null>(null);
 /** 是否为 Schema 渲染模式 */
 const isSchemaMode = ref(false);
+/** 最终徽标数量 */
+const resolvedBadgeCount = computed(() => (props.badge ? resolveNotificationBadgeCount(props.badge) : badgeCount.value));
+/** 最终徽标模式 */
+const resolvedBadgeMode = computed(() => props.badge?.mode || 'count');
+/** 是否显示徽标 */
+const shouldShowBadge = computed(() => Boolean(props.badge?.showZero) || resolvedBadgeCount.value > 0);
 
 /** 加载徽标数 */
 async function loadBadge() {
@@ -77,9 +88,16 @@ onMounted(() => {
     loadSchema();
   } else {
     loadBadge();
-    if (props.badgeApi) {
-      setInterval(loadBadge, 30000);
+    if (props.badgeApi && !props.badge) {
+      badgeTimer.value = setInterval(loadBadge, 30000);
     }
+  }
+});
+
+onUnmounted(() => {
+  if (badgeTimer.value) {
+    clearInterval(badgeTimer.value);
+    badgeTimer.value = null;
   }
 });
 </script>
@@ -95,9 +113,10 @@ onMounted(() => {
         <NButton quaternary circle @click="handleClick">
           <template #icon>
             <NBadge
-              :value="badgeCount"
-              :max="99"
-              :show="badgeCount > 0"
+              :value="resolvedBadgeMode === 'dot' ? undefined : resolvedBadgeCount"
+              :dot="resolvedBadgeMode === 'dot'"
+              :max="badge?.max ?? 99"
+              :show="shouldShowBadge"
               :style="badgeColor ? { '--n-badge-color': badgeColor } : {}"
             >
               <Icon :icon="icon" width="20" height="20" />
@@ -110,9 +129,10 @@ onMounted(() => {
     <NButton v-else quaternary circle @click="handleClick">
       <template #icon>
         <NBadge
-          :value="badgeCount"
-          :max="99"
-          :show="badgeCount > 0"
+          :value="resolvedBadgeMode === 'dot' ? undefined : resolvedBadgeCount"
+          :dot="resolvedBadgeMode === 'dot'"
+          :max="badge?.max ?? 99"
+          :show="shouldShowBadge"
           :style="badgeColor ? { '--n-badge-color': badgeColor } : {}"
         >
           <Icon :icon="icon" width="20" height="20" />

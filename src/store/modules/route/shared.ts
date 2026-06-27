@@ -1,7 +1,10 @@
 import type { RouteLocationNormalizedLoaded, RouteMeta, RouteRecordRaw } from 'vue-router';
+import type { VNodeChild } from 'vue';
 import { defineComponent, h } from 'vue';
+import { NBadge } from 'naive-ui';
 import { useSvgIcon } from '@/hooks/common/icon';
 import DynamicPageComponent from '@/components/json/DynamicPage.vue';
+import { resolveNotificationBadgeCount } from '@/service/notification/badge';
 
 /** 布局组件 - 根据 meta.layoutType 动态选择布局 */
 const LayoutWrapper = () => import('@/layouts/index.vue');
@@ -39,6 +42,8 @@ export interface MenuItem {
   label: string;
   /** 菜单图标（渲染函数） */
   icon?: () => any;
+  /** 菜单右侧扩展区域（Naive UI NMenu extra） */
+  extra?: () => VNodeChild;
   /** 路由键 */
   routeKey: string;
   /** 路由路径 */
@@ -47,6 +52,37 @@ export interface MenuItem {
   i18nKey?: string;
   /** 子菜单 */
   children?: MenuItem[];
+}
+
+/**
+ * 解析菜单徽标数量
+ * notification: 从通知 store 未读数读取；types 为空时统计全部未读。
+ * static: 使用配置中的固定 value。
+ */
+export function resolveMenuBadgeCount(badge?: Api.Route.MenuBadgeConfig): number {
+  return resolveNotificationBadgeCount(badge);
+}
+
+/**
+ * 创建菜单徽标渲染函数
+ */
+export function createMenuBadgeExtra(badge?: Api.Route.MenuBadgeConfig): (() => VNodeChild) | undefined {
+  if (!badge) return undefined;
+
+  return () => {
+    const count = resolveMenuBadgeCount(badge);
+    const mode = badge.mode || 'count';
+    const show = badge.showZero || count > 0;
+
+    if (!show) return null;
+
+    return h(NBadge, {
+      dot: mode === 'dot',
+      value: mode === 'dot' ? undefined : count,
+      max: badge.max ?? 99,
+      show
+    });
+  };
 }
 
 /**
@@ -173,7 +209,7 @@ function getMenuByRoute(route: RouteRecordRaw | RouteLocationNormalizedLoaded, f
   const { SvgIconVNode } = useSvgIcon();
   
   const { name, path } = route;
-  const { title, i18nKey, icon } = route.meta ?? {};
+  const { title, i18nKey, icon, badge } = route.meta ?? {};
 
   const menu: MenuItem = {
     key: name as string,
@@ -181,7 +217,8 @@ function getMenuByRoute(route: RouteRecordRaw | RouteLocationNormalizedLoaded, f
     i18nKey: i18nKey as string | undefined,
     routeKey: name as string,
     routePath: fullPath || path,
-    icon: SvgIconVNode({ icon: icon as string, fontSize: 20 })
+    icon: SvgIconVNode({ icon: icon as string, fontSize: 20 }),
+    extra: createMenuBadgeExtra(badge)
   };
 
   return menu;
@@ -468,7 +505,8 @@ function transformMenuRouteToRoute(menuRoute: Api.Route.MenuRoute, isChild = fal
     href: meta?.href,
     useJsonRenderer: meta?.useJsonRenderer ?? true,
     schemaSource: meta?.schemaSource,
-    isDefaultAfterLogin: meta?.isDefaultAfterLogin
+    isDefaultAfterLogin: meta?.isDefaultAfterLogin,
+    badge: meta?.badge
   } satisfies RouteMeta;
 
   // 递归处理子路由

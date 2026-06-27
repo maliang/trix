@@ -6,6 +6,8 @@ import { setupRouter, setRouterGuardOptions } from './router';
 import { setupI18n } from './locales';
 import { useAuthStore } from './store/modules/auth';
 import { useRouteStore } from './store/modules/route';
+import { getBackendConfig } from './config/backend';
+import { useNotificationRealtime } from './service/notification';
 import App from './App.vue';
 
 async function setupApp() {
@@ -27,6 +29,9 @@ async function setupApp() {
   // 初始化认证状态（在路由之前）
   const authStore = useAuthStore();
   await authStore.initUserInfo();
+  if (authStore.isLogin) {
+    useNotificationRealtime().start(getBackendConfig().realtime);
+  }
 
   // 初始化路由 Store（在配置守卫之前）
   const routeStore = useRouteStore();

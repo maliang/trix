@@ -18,6 +18,8 @@ export interface BackendConfig {
   languages?: App.I18n.LangOption[];
   /** 翻译资源接口 */
   translationsUrl?: string;
+  /** 全局实时通知配置 */
+  realtime?: import('@/service/notification/realtime').NotificationRealtimeConfig;
 }
 
 declare global {

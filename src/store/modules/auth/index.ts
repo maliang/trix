@@ -4,6 +4,8 @@ import { useLoading } from '@trix/hooks';
 import { localStg } from '@/utils/storage';
 import { SetupStoreId } from '@/store/plugins';
 import { get, post } from '@/service/request';
+import { getBackendConfig } from '@/config/backend';
+import { useNotificationRealtime } from '@/service/notification';
 import { clearAuthStorage, getToken } from './shared';
 import { router } from '@/router';
 
@@ -78,6 +80,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
    */
   async function resetStore() {
     recordUserId();
+    useNotificationRealtime().stop();
     clearAuthStorage();
 
     // 重置用户信息
@@ -273,6 +276,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
       const { useRouteStore } = await import('@/store/modules/route');
       const routeStore = useRouteStore();
       await routeStore.initAuthRoute();
+      useNotificationRealtime().start(getBackendConfig().realtime);
 
       if (redirect) {
         // 重定向逻辑：

@@ -74,9 +74,27 @@ declare namespace Api {
         requiresAuth?: boolean;
         /** 父级菜单路径（用于面包屑导航） */
         activeMenu?: string;
+        /** 菜单徽标配置 */
+        badge?: MenuBadgeConfig;
       };
       /** 子路由 */
       children?: MenuRoute[];
+    }
+
+    /** 菜单徽标配置 */
+    interface MenuBadgeConfig {
+      /** 徽标来源：notification 从通知未读数读取，static 使用固定值 */
+      source?: 'notification' | 'static';
+      /** 绑定的通知类型，为空时统计全部未读通知 */
+      types?: string[];
+      /** 显示模式 */
+      mode?: 'count' | 'dot';
+      /** static 模式下的固定数值 */
+      value?: number;
+      /** 最大显示数值，超过后显示 n+ */
+      max?: number;
+      /** 数量为 0 时是否仍显示 */
+      showZero?: boolean;
     }
 
     /** 用户路由 */

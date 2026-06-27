@@ -109,6 +109,12 @@ declare module 'vue-router' {
      * 用于面包屑导航
      */
     activeMenu?: string;
+
+    /**
+     * 菜单徽标配置
+     * 可绑定通知未读数，用于在导航菜单中显示待处理任务数量。
+     */
+    badge?: Api.Route.MenuBadgeConfig;
   }
 }
 

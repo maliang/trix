@@ -44,10 +44,6 @@ export interface HeaderNotificationProps {
   tabs?: NotificationTabConfig[];
   /** 每页消息数量，默认 10 */
   pageSize?: number;
-  /** WebSocket 连接地址 */
-  wsUrl?: string;
-  /** 是否启用 WebSocket，默认 false */
-  enableWs?: boolean;
   /** 是否启用应用内通知，默认 true */
   enableNotification?: boolean;
   /** 通知显示时长（毫秒），默认 4500 */
@@ -64,14 +60,6 @@ export interface HeaderNotificationProps {
   enableDetail?: boolean;
   /** 标题前缀字段，用于显示标题前的分类信息，如 'titleWithCategory' */
   titlePrefixField?: string;
-  /** 是否启用轮询，默认 false */
-  enablePolling?: boolean;
-  /** 轮询间隔（毫秒），默认 15000 */
-  pollingInterval?: number;
-  /** 轮询 API 端点 */
-  pollingApi?: string;
-  /** 当前已检查到的最大消息 ID，用于增量拉取新消息 */
-  sinceId?: string | number;
 }
 
 /** 分页响应数据 */
