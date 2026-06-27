@@ -39,9 +39,37 @@ type BehaviorAudioPlayer = (src: string) => Promise<void> | void;
 type BehaviorActionHandler = (action: NotificationBehaviorAction, message: NotificationMessage) => Promise<void> | void;
 
 const MIN_POLLING_INTERVAL = 1000;
+const DEFAULT_REALTIME_CONFIG: NotificationRealtimeConfig = {
+  enabled: true,
+  driver: 'polling',
+  polling: {
+    api: '/notifications/poll',
+    interval: 15000
+  },
+  websocket: {
+    url: ''
+  },
+  behaviors: {}
+};
 
 function normalizeInterval(interval?: number): number {
   return Math.max(Number(interval) || 15000, MIN_POLLING_INTERVAL);
+}
+
+function resolveRealtimeConfig(nextConfig?: NotificationRealtimeConfig): NotificationRealtimeConfig {
+  return {
+    ...DEFAULT_REALTIME_CONFIG,
+    ...nextConfig,
+    polling: {
+      ...DEFAULT_REALTIME_CONFIG.polling,
+      ...nextConfig?.polling
+    },
+    websocket: {
+      ...DEFAULT_REALTIME_CONFIG.websocket,
+      ...nextConfig?.websocket
+    },
+    behaviors: nextConfig?.behaviors ?? DEFAULT_REALTIME_CONFIG.behaviors
+  };
 }
 
 function showInAppNotification(message: NotificationMessage, config: NotificationRealtimeConfig): void {
@@ -84,7 +112,7 @@ async function defaultAudioPlayer(src: string): Promise<void> {
 }
 
 function createNotificationRealtime() {
-  const config = ref<NotificationRealtimeConfig>({});
+  const config = ref<NotificationRealtimeConfig>(resolveRealtimeConfig());
   const isPolling = ref(false);
   const isWsConnected = ref(false);
   const isRunning = computed(() => isPolling.value || isWsConnected.value);
@@ -105,7 +133,7 @@ function createNotificationRealtime() {
   const behaviorActionHandlers = new Map<string, BehaviorActionHandler>();
 
   function configure(nextConfig?: NotificationRealtimeConfig): void {
-    config.value = nextConfig || {};
+    config.value = resolveRealtimeConfig(nextConfig);
   }
 
   function setPollFetcher(fetcher: PollFetcher): void {
@@ -212,6 +240,7 @@ function createNotificationRealtime() {
     if (pollingTimer || isPolling.value) return;
 
     isPolling.value = true;
+    void pollOnce();
     pollingTimer = setInterval(() => {
       pollOnce();
     }, normalizeInterval(config.value.polling?.interval));
@@ -261,7 +290,7 @@ function createNotificationRealtime() {
   }
 
   function start(nextConfig?: NotificationRealtimeConfig): void {
-    if (nextConfig) configure(nextConfig);
+    configure(nextConfig ?? config.value);
     if (config.value.enabled === false) return;
 
     if (config.value.driver === 'ws') {
@@ -277,6 +306,8 @@ function createNotificationRealtime() {
   function stop(): void {
     stopPolling();
     stopWs();
+    maxMessageId = 0;
+    handledBehaviorMessageIds.clear();
   }
 
   return {

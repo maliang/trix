@@ -7,6 +7,9 @@ describe('notification realtime service', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.useFakeTimers();
+    const service = useNotificationRealtime();
+    service.stop();
+    service.configure();
   });
 
   it('polls independently from HeaderNotification and writes new messages into the store', async () => {
@@ -40,18 +43,41 @@ describe('notification realtime service', () => {
     service.setPollFetcher(fetcher);
     service.start();
 
-    await vi.advanceTimersByTimeAsync(1500);
-
     expect(fetcher).toHaveBeenCalledWith('/notifications/poll', { since_id: 0 });
+
+    await vi.advanceTimersByTimeAsync(0);
+
     expect(store.messages).toHaveLength(1);
     expect(store.messages[0].id).toBe('12');
     expect(service.isRunning.value).toBe(true);
 
+    await vi.advanceTimersByTimeAsync(1500);
+    expect(fetcher).toHaveBeenCalledTimes(2);
+
     service.stop();
     await vi.advanceTimersByTimeAsync(1500);
 
-    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(fetcher).toHaveBeenCalledTimes(2);
     expect(service.isRunning.value).toBe(false);
+  });
+
+  it('uses the default Thinkrix polling config when no backend realtime config is injected', () => {
+    const fetcher = vi.fn().mockResolvedValue({
+      messages: [],
+      unread_count: 0,
+      has_new: false,
+      server_time: '2026-06-28T00:00:01.000Z'
+    });
+    const service = useNotificationRealtime();
+
+    service.setPollFetcher(fetcher);
+    service.start();
+
+    expect(service.config.value.polling?.api).toBe('/notifications/poll');
+    expect(service.config.value.polling?.interval).toBe(15000);
+    expect(fetcher).toHaveBeenCalledWith('/notifications/poll', { since_id: 0 });
+
+    service.stop();
   });
 
   it('runs configured behavior actions once per new message and repeats sound action', async () => {
