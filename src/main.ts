@@ -3,15 +3,44 @@ import './plugins/assets';
 import { setupDayjs, setupIconifyOffline, setupJsonRenderer, setupLoading, setupNProgress } from './plugins';
 import { setupStore } from './store';
 import { setupRouter, setRouterGuardOptions } from './router';
-import { setupI18n } from './locales';
+import { setupI18n, applyBackendLocale } from './locales';
 import { useAuthStore } from './store/modules/auth';
 import { useRouteStore } from './store/modules/route';
-import { getBackendConfig } from './config/backend';
+import { getBackendConfig, hasInjectedConfig } from './config/backend';
+import type { BackendConfig } from './config/backend';
 import { useNotificationRealtime } from './service/notification';
 import { useAudioUnlock } from './service/audio/unlock';
+import { get } from './service/request';
 import App from './App.vue';
 
+/**
+ * 运行时兜底加载后端配置
+ *
+ * 正常情况下后端 entry() 会把 window.__LARTRIX_CONFIG__ 注入到入口 HTML。
+ * 但当入口 HTML 被 Web 服务器当作静态文件直接返回（例如 /admin 命中物理目录、
+ * 未经过 PHP 路由）时，注入会被跳过，导致 realtime.behaviors 等配置丢失。
+ * 这里在缺失时主动调用 auth/config 接口补齐，避免依赖具体的 Web 服务器路由配置。
+ */
+async function ensureBackendConfig(): Promise<void> {
+  if (hasInjectedConfig()) return;
+
+  try {
+    const { data } = await get<BackendConfig>('/auth/config', undefined, { showErrorMessage: false });
+    if (data) {
+      window.__LARTRIX_CONFIG__ = data;
+    }
+  } catch (error) {
+    console.warn('[BackendConfig] runtime fetch fallback failed:', error);
+  }
+}
+
 async function setupApp() {
+  // 入口未注入配置时，运行时补齐（必须在所有读取配置的初始化之前）
+  await ensureBackendConfig();
+
+  // 配置就绪后立即应用语言（让标题/语言在未注入时也正确）
+  applyBackendLocale();
+
   setupLoading();
 
   setupNProgress();
@@ -41,6 +70,7 @@ async function setupApp() {
 
   // 配置路由守卫选项（在设置路由之前）
   setRouterGuardOptions({
+    appTitle: getBackendConfig().appTitle,
     isLoggedIn: () => authStore.isLogin,
     getUserPermissions: () => authStore.userInfo.permissions,
     hasAnyPermission: (permissions: string[]) => {

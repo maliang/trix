@@ -44,8 +44,8 @@ const resolvedBadgeCount = computed(() => resolveNotificationBadgeCount(props.ba
 const resolvedBadgeMode = computed(() => props.badge?.mode || 'count');
 /** 是否显示徽标 */
 const shouldShowBadge = computed(() => Boolean(props.badge?.showZero) || resolvedBadgeCount.value > 0);
-/** 最终徽标样式 */
-const resolvedBadgeStyle = computed(() => (props.badge?.color ? { '--n-badge-color': props.badge.color } : {}));
+/** 最终徽标颜色（NBadge 通过 color 属性自定义背景色） */
+const resolvedBadgeColor = computed(() => props.badge?.color || undefined);
 
 /** 加载 Schema（高级模式） */
 async function loadSchema() {
@@ -102,7 +102,7 @@ onMounted(() => {
               :dot="resolvedBadgeMode === 'dot'"
               :max="badge?.max ?? 99"
               :show="shouldShowBadge"
-              :style="resolvedBadgeStyle"
+              :color="resolvedBadgeColor"
             >
               <Icon :icon="icon" width="20" height="20" />
             </NBadge>
@@ -118,7 +118,7 @@ onMounted(() => {
           :dot="resolvedBadgeMode === 'dot'"
           :max="badge?.max ?? 99"
           :show="shouldShowBadge"
-          :style="resolvedBadgeStyle"
+          :color="resolvedBadgeColor"
         >
           <Icon :icon="icon" width="20" height="20" />
         </NBadge>

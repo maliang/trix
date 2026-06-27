@@ -65,11 +65,10 @@ function createAudioUnlock() {
 
   async function play(src: string): Promise<void> {
     if (!unlocked) {
-      if (!pendingSources.includes(src)) {
-        pendingSources.push(src);
-      }
-      await unlock();
-      if (!unlocked) return;
+      pendingSources.push(src);
+      const didUnlock = await unlock();
+      if (!didUnlock) return;
+      return;
     }
 
     await tryPlay(src);
