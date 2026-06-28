@@ -15,6 +15,8 @@ export interface NotificationBehaviorAction {
 export interface NotificationBehaviorConfig {
   /** 是否在新消息到达时触发，默认 true */
   playOnNew?: boolean;
+  /** 该类型新消息到达时是否弹出应用内通知 toast，默认 true */
+  notify?: boolean;
   /** 行为动作列表 */
   actions?: NotificationBehaviorAction[];
 }
@@ -217,7 +219,11 @@ function createNotificationRealtime() {
       maxMessageId = id;
     }
 
-    showInAppNotification(message, config.value);
+    // 按类型控制是否弹出应用内通知 toast（behaviors[type].notify === false 时不弹）
+    const behavior = config.value.behaviors?.[message.type];
+    if (behavior?.notify !== false) {
+      showInAppNotification(message, config.value);
+    }
     await runMessageBehavior(message);
   }
 
