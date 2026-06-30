@@ -9,12 +9,28 @@ import { themeVars } from '@/styles/vars';
 export function getBaseUrl(path: string): string {
   const base = import.meta.env.VITE_BASE_URL || '/';
   // 如果路径已经是完整 URL 或已包含 base，直接返回
-  if (path.startsWith('http') || path.startsWith(base)) {
+  if (!path) return path;
+
+  if (
+    path.startsWith('http://') ||
+    path.startsWith('https://') ||
+    path.startsWith('//') ||
+    path.startsWith('data:') ||
+    path.startsWith('blob:') ||
+    path.startsWith(base)
+  ) {
+    return path;
+  }
+  if (path.startsWith('/') && !isAppStaticAsset(path)) {
     return path;
   }
   // 移除路径开头的 /，然后拼接 base
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;
   return `${base}${cleanPath}`;
+}
+
+function isAppStaticAsset(path: string): boolean {
+  return path === '/favicon.svg' || path.startsWith('/assets/') || path.startsWith('/mock/');
 }
 
 /** 获取默认主题设置（使用后台注入的配置） */

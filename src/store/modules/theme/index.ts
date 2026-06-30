@@ -9,7 +9,6 @@ import { get, post } from '@/service/request';
 import {
   addThemeVarsToGlobal,
   createThemeToken,
-  getBaseUrl,
   getNaiveTheme,
   themeSettings as defaultThemeSettings,
   toggleAuxiliaryColorModes,
@@ -142,7 +141,7 @@ export const useThemeStore = defineStore(SetupStoreId.Theme, () => {
 
   /** 应用 Logo */
   const logo = computed({
-    get: () => getBaseUrl(settings.value.logo),
+    get: () => settings.value.logo,
     set: (val) => { settings.value.logo = val; }
   });
 

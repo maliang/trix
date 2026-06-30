@@ -6,19 +6,19 @@ import { localStg } from '@/utils/storage';
 import { toggleHtmlClass } from '@/utils/common';
 
 /** 默认 Logo 图片路径 */
-const BASE_URL = import.meta.env.VITE_BASE_URL || '/';
-const DEFAULT_LOGO = `${BASE_URL}favicon.svg`;
+const DEFAULT_LOGO = '/admin/favicon.svg';
 
 /** 获取带 base URL 的路径 */
 function getBaseUrl(path: string): string {
+  const base = import.meta.env.VITE_BASE_URL || '/';
   if (!path) return DEFAULT_LOGO;
   // 如果路径已经是完整 URL 或已包含 base，直接返回
-  if (path.startsWith('http') || path.startsWith(BASE_URL)) {
+  if (path.startsWith('http') || path.startsWith(base)) {
     return path;
   }
   // 移除路径开头的 /，然后拼接 base
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-  return `${BASE_URL}${cleanPath}`;
+  return `${base}${cleanPath}`;
 }
 
 /** 默认应用标题 */
@@ -40,7 +40,7 @@ export function setupLoading() {
   const backendConfig = getBackendConfig();
   // 从缓存中获取主题设置
   const cachedSettings = localStg.get('themeSettings');
-  const logoPath = getBaseUrl(cachedSettings?.logo || backendConfig.logo || '');
+  const logoPath = cachedSettings?.logo || backendConfig.logo || DEFAULT_LOGO;
   const appTitle = escapeHtml(cachedSettings?.appTitle || backendConfig.appTitle || DEFAULT_APP_TITLE);
   
   const themeColor = localStg.get('themeColor') || '#646cff';

@@ -36,7 +36,7 @@ export interface LoginToken {
  */
 export interface BackendConfig {
   /** 后台标题 */
-  app_title?: string;
+  appTitle?: string;
   /** 前端路径 */
   path?: string;
   /** API 前缀 */
@@ -253,11 +253,11 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
           backendConfig.value = data.config;
           localStg.set('backendConfig', data.config);
 
-          // 更新 app_title
-          if (data.config.app_title) {
+          // 更新 appTitle
+          if (data.config.appTitle) {
             const { useThemeStore } = await import('@/store/modules/theme');
             const themeStore = useThemeStore();
-            themeStore.setAppTitle(data.config.app_title);
+            themeStore.setAppTitle(data.config.appTitle);
           }
         }
       }

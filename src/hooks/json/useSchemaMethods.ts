@@ -20,6 +20,8 @@
 
 import { useRoute, useRouter } from 'vue-router';
 import { useTabStore } from '@/store/modules/tab';
+import { useThemeStore } from '@/store/modules/theme';
+import { setRouterGuardOptions } from '@/router/guard';
 import { request } from '@/service';
 import type { MessageOptions, DialogOptions, NotificationOptions } from 'naive-ui';
 
@@ -33,6 +35,7 @@ export function useSchemaMethods() {
   const route = useRoute();
   const router = useRouter();
   const tabStore = useTabStore();
+  const themeStore = useThemeStore();
 
   /**
    * 导航方法 - 页面跳转相关
@@ -355,6 +358,25 @@ export function useSchemaMethods() {
     error: () => window.$loadingBar?.error()
   };
 
+  const $theme = {
+    setAppTitle(title: string) {
+      themeStore.setAppTitle(title);
+      setRouterGuardOptions({ appTitle: title });
+      document.title = title || document.title;
+    },
+    setLogo(logo: string) {
+      themeStore.setLogo(logo);
+    },
+    updateSite(config: { appTitle?: string; logo?: string }) {
+      if (typeof config.appTitle === 'string') {
+        $theme.setAppTitle(config.appTitle);
+      }
+      if (typeof config.logo === 'string') {
+        $theme.setLogo(config.logo);
+      }
+    }
+  };
+
   /**
    * 返回所有方法集合
    * 在 Schema 中可通过 $methods.$nav.push() 等方式调用
@@ -367,6 +389,7 @@ export function useSchemaMethods() {
     $message,
     $dialog,
     $notification,
+    $theme,
     $loadingBar
   };
 
@@ -378,6 +401,7 @@ export function useSchemaMethods() {
     $message,
     $dialog,
     $notification,
+    $theme,
     $loadingBar,
     schemaMethods
   };

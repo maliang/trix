@@ -170,11 +170,11 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
                 if (data.config) {
                     backendConfig.value = data.config;
                     localStg.set('backendConfig', data.config);
-                    // 更新 app_title
-                    if (data.config.app_title) {
+                    // 更新 appTitle
+                    if (data.config.appTitle) {
                         const { useThemeStore } = await import('@/store/modules/theme');
                         const themeStore = useThemeStore();
-                        themeStore.setAppTitle(data.config.app_title);
+                        themeStore.setAppTitle(data.config.appTitle);
                     }
                 }
             }
