@@ -367,11 +367,15 @@ export function useSchemaMethods() {
     setLogo(logo: string) {
       themeStore.setLogo(logo);
     },
-    updateSite(config: { appTitle?: string; logo?: string }) {
-      if (typeof config.appTitle === 'string') {
+    updateSite(configOrTitle: { appTitle?: string; logo?: string } | string, logo?: string) {
+      const config = typeof configOrTitle === 'string'
+        ? { appTitle: configOrTitle, logo }
+        : configOrTitle;
+
+      if (typeof config?.appTitle === 'string') {
         $theme.setAppTitle(config.appTitle);
       }
-      if (typeof config.logo === 'string') {
+      if (typeof config?.logo === 'string') {
         $theme.setLogo(config.logo);
       }
     }
