@@ -79,8 +79,8 @@ export function setupLoading() {
 
   const loading = `
 <div class="fixed-center flex-col bg-layout" style="${cssVars}">
-  <div class="w-128px h-128px">
-    <img src="${safeLogoPath}" alt="Logo" class="w-full h-full object-contain" />
+  <div class="h-128px flex-center">
+    <img src="${safeLogoPath}" alt="Logo" class="h-full w-auto object-contain" />
   </div>
   <div class="w-56px h-56px my-36px">
     <div class="relative h-full animate-spin">

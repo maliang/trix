@@ -269,6 +269,23 @@ export function setupJsonRenderer(app) {
             }
             return next;
         },
+        // NaiveUI 组件的模型绑定适配器（naive-ui 专属策略集中在此，保持 vschema-ui 通用）：
+        // NTimePicker/NDatePicker 的 value 必须是时间戳|null，绑字符串/空串会触发 "Invalid time value"。
+        // 改用 formatted-value 解析字符串，空值传 null；仅字符串/空时启用。
+        modelAdapters: {
+            NTimePicker: {
+                prop: 'formatted-value',
+                event: 'onUpdate:formattedValue',
+                emptyValue: null,
+                when: (v) => typeof v === 'string' || v == null
+            },
+            NDatePicker: {
+                prop: 'formatted-value',
+                event: 'onUpdate:formattedValue',
+                emptyValue: null,
+                when: (v) => typeof v === 'string' || v == null
+            }
+        },
         // 注册组件
         components: allComponents
     });

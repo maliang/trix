@@ -19,7 +19,7 @@ const themeStore = useThemeStore();
 
 <template>
   <RouterLink to="/" class="w-full flex-center nowrap-hidden">
-    <img :src="themeStore.logo" alt="Logo" class="size-32px" />
+    <img :src="themeStore.logo" alt="Logo" class="h-32px w-auto" />
     <h2 v-show="showTitle" class="pl-8px text-16px text-primary font-bold transition duration-300 ease-in-out">
       {{ themeStore.appTitle }}
     </h2>
